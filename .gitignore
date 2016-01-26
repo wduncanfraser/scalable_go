@@ -1,3 +1,12 @@
+# Ignore OS X .DS_Store
+.DS_Store
+
+# ignore JetBrains project
+.idea/
+
+#ignore all files under build directory
+build/
+
 # Compiled Object files
 *.slo
 *.lo
