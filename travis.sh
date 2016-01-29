@@ -9,4 +9,4 @@ cmake ..
 
 # Run Tests
 make
-./test_neuralnet
+./neuralnet_tests

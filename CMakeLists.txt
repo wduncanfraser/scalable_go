@@ -1,13 +1,20 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.4)
+
 project(Scalable_Go)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+add_definitions(-std=c++11)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/")
 
-set(SOURCE_LIBS
-    lib/neuralnet.cpp)
+set(NET_BENCHMARK
+        benchmark_neuralnet.cpp)
 
-set(SOURCE_NET_TEST
-    test_neuralnet.cpp)
+add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
-add_executable(test_neuralnet ${SOURCE_LIBS} ${SOURCE_NET_TEST})
+include_directories(goboard neuralnet)
+
+add_subdirectory(goboard)
+add_subdirectory(neuralnet)
+add_subdirectory(tests)
+
+target_link_libraries(benchmark_neuralnet neuralnet)
