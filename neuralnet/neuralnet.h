@@ -5,11 +5,6 @@ Email: duncan@wduncanfraser.com
 
 */
 
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-
 //if-defs to prevent multiple inclusions.
 #ifndef NEURALNET_H
 #define NEURALNET_H
@@ -31,7 +26,7 @@ private:
     //Number of layers. Must be at least 2.
     unsigned int layer_count;
     //Number on Neurons for each layer
-    std::vector<unsigned int> layer_neuron_count;
+    std::vector<unsigned int> neuron_counts;
     //Neurons
     std::vector<std::vector<double>> neurons;
     //Weights
@@ -41,16 +36,16 @@ public:
     NeuralNet();
 
     //Constructor with size specifications for layers.
-    NeuralNet(const unsigned int ilayer_count, const std::vector<unsigned int> ilayer_neuron_count);
+    NeuralNet(const unsigned int i_layer_count, const std::vector<unsigned int> i_neuron_counts);
 
     //Copy Constructor
-    NeuralNet(const NeuralNet &iNetwork);
+    NeuralNet(const NeuralNet &i_network);
 
     //Destructor
     ~NeuralNet();
 
     //Copy operator
-    NeuralNet &operator=(const NeuralNet &iNetwork);
+    NeuralNet &operator=(const NeuralNet &i_network);
 
     //Comparison Operator
     bool operator==(const NeuralNet &i_network) const;
@@ -59,10 +54,10 @@ public:
     bool operator!=(const NeuralNet &i_network) const;
 
     //Initialize Nueral Network with random weights in a uniform distribution
-    void initializeRandomWeights();
+    void initialize_random();
 
     //Export weights to specified ofstream
-    int exportWeights(std::ofstream &file, bool clean);
+    int export_weights_stream(std::ofstream &file, bool clean);
 
     //Import weights from specified file. Each weight set needs to be CSV on a single line
     // Returns 0 if no error and import succeeds
@@ -70,25 +65,18 @@ public:
     // 2: Layer count doesn't match
     // 3: Neuron count doesn't match
     // 10: File malformed
-    int importWeights(std::ifstream &file);
+    int import_weights_stream(std::ifstream &file);
 
     //FeedForward Function, calculate output based on inputs.
     // Returns 0 if no error
     // Returns 1 if vector size does not match neural network input layer
-    int feedForward(const std::vector<double> &input);
+    int feed_forward(const std::vector<double> &input);
 
     //Mutator. Randomly mutates
     int mutate(const double &radius);
 
-    //Displays Neural Net output layer.
-    void displayOutput();
-
     //Get output
     std::vector<double> get_output() const;
-
-    //Display Neural Net Values. Incomplete, prototype.
-    int display();
-
 };
 
 

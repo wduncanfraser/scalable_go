@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "gtest/gtest.h"
 
 #include "neuralnet.h"
@@ -18,7 +19,7 @@
 TEST(basic_check, input_difference) {
     // Check that different inputs result in different outputs on the same network
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
-    test1.initializeRandomWeights();
+    test1.initialize_random();
 
     std::vector<double> test_input1, test_input2;
 
@@ -27,9 +28,9 @@ TEST(basic_check, input_difference) {
     test_input2 = {1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, -1, 0, 0, -1, -1, -1, 0, -1, -1, -1, -1, 0, -1,
                    -1, -1};
 
-    test1.feedForward(test_input1);
+    test1.feed_forward(test_input1);
     std::vector<double> output1 = test1.get_output();
-    test1.feedForward(test_input2);
+    test1.feed_forward(test_input2);
     std::vector<double> output2 = test1.get_output();
 
     EXPECT_NE(output1, output2);
@@ -38,7 +39,7 @@ TEST(basic_check, input_difference) {
 TEST(basic_check, mutator_mutates) {
     // Check that the mutator actually changes the network
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
-    test1.initializeRandomWeights();
+    test1.initialize_random();
 
     NeuralNet test2(test1);
     test2.mutate(MUTATER);
@@ -49,7 +50,7 @@ TEST(basic_check, mutator_mutates) {
 TEST(basic_check, mutator_output) {
     // Check that output changes after mutator
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
-    test1.initializeRandomWeights();
+    test1.initialize_random();
 
     NeuralNet test2(test1);
     test2.mutate(MUTATER);
@@ -58,8 +59,8 @@ TEST(basic_check, mutator_output) {
     test_input = {1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                   -1, -1};
 
-    test1.feedForward(test_input);
-    test2.feedForward(test_input);
+    test1.feed_forward(test_input);
+    test2.feed_forward(test_input);
 
     EXPECT_NE(test1.get_output(), test2.get_output());
 }
@@ -67,15 +68,15 @@ TEST(basic_check, mutator_output) {
 TEST(basic_check, write_to_file) {
     // Check that there is no data loss/roundng error in exporting the network to file
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
-    test1.initializeRandomWeights();
+    test1.initialize_random();
 
     std::ofstream output_file("testweights.txt");
-    test1.exportWeights(output_file, true);
+    test1.export_weights_stream(output_file, true);
     output_file.close();
 
     NeuralNet test2(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     std::ifstream input_file("testweights.txt");
-    test2.importWeights(input_file);
+    test2.import_weights_stream(input_file);
 
     EXPECT_EQ(test1, test2);
 }

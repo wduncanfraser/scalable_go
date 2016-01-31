@@ -17,7 +17,7 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
-    test1.initializeRandomWeights();
+    test1.initialize_random();
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
@@ -41,7 +41,7 @@ int main() {
     start = std::chrono::system_clock::now();
     //#pragma omp parallel for firstprivate(test1)
     for (int i = 0; i < 1000000; i++) {
-        test1.feedForward(testInput);
+        test1.feed_forward(testInput);
     }
     // End timing
     end = std::chrono::system_clock::now();

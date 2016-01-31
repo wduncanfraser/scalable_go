@@ -1,26 +1,26 @@
+#include <string>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
 #include <random>
 
 #include "neuralnet.h"
 
-//Support function for calculating activate.
-//Declared inline as it is only 1 line to increase speed.
 inline double activate(double x) {
     //Using
     return ((x) / (1 + std::abs(x)));
 }
 
-//Default constructor, blank
 NeuralNet::NeuralNet() {
 
 }
 
-//Constructor with size specifications for layers.
-NeuralNet::NeuralNet(const unsigned int ilayer_count, const std::vector<unsigned int> ilayer_neuron_count) {
+NeuralNet::NeuralNet(const unsigned int i_layer_count, const std::vector<unsigned int> i_neuron_counts) {
     //Check that layer count is correct
-    if (ilayer_count == ilayer_neuron_count.size()) {
-        layer_count = ilayer_count;
-        layer_neuron_count = ilayer_neuron_count;
+    if (i_layer_count == i_neuron_counts.size()) {
+        layer_count = i_layer_count;
+        neuron_counts = i_neuron_counts;
     }
     else {
         //Error generation
@@ -35,71 +35,65 @@ NeuralNet::NeuralNet(const unsigned int ilayer_count, const std::vector<unsigned
     for (unsigned int i = 0; i < layer_count; i++) {
         //If output layer, don't add bias
         if (i == (layer_count - 1)) {
-            neurons[i].assign(layer_neuron_count[i], 0);
+            neurons[i].assign(neuron_counts[i], 0);
         }
             //For all other layers, add bias
         else {
-            neurons[i].assign(layer_neuron_count[i] + 1, 0);
+            neurons[i].assign(neuron_counts[i] + 1, 0);
             //Set the bias to 1
-            neurons[i][layer_neuron_count[i]] = 1.0;
+            neurons[i][neuron_counts[i]] = 1.0;
         }
     }
 
     //Assign/Resize Weight Vectors to appropriate size [x][y] and initialize elements to 0.
     //+1 is to account for bias
     for (unsigned int i = 1; i < layer_count; i++) {
-        weights[i - 1].resize(layer_neuron_count[i]);
+        weights[i - 1].resize(neuron_counts[i]);
 
         for (std::vector<double> &row: weights[i - 1]) {
-            row.assign(layer_neuron_count[i - 1] + 1, 0);
+            row.assign(neuron_counts[i - 1] + 1, 0);
         }
     }
 }
 
-//Copy Constructor
-NeuralNet::NeuralNet(const NeuralNet &iNetwork) {
+NeuralNet::NeuralNet(const NeuralNet &i_network) {
     //Copy layer count
-    layer_count = iNetwork.layer_count;
+    layer_count = i_network.layer_count;
     //Copy layer neuron counts
-    layer_neuron_count = iNetwork.layer_neuron_count;
+    neuron_counts = i_network.neuron_counts;
     //Copy Neurons
-    neurons = iNetwork.neurons;
+    neurons = i_network.neurons;
     //Copy Weights
-    weights = iNetwork.weights;
+    weights = i_network.weights;
 }
 
-// Destructor
 NeuralNet::~NeuralNet() {
     //std::cout << "Running Destructor";
 }
 
-//Copy Operator
-NeuralNet &NeuralNet::operator=(const NeuralNet &iNetwork) {
-    if (this != &iNetwork) {
+NeuralNet &NeuralNet::operator=(const NeuralNet &i_network) {
+    if (this != &i_network) {
         //Copy layer count
-        layer_count = iNetwork.layer_count;
+        layer_count = i_network.layer_count;
         //Copy layer neuron counts
-        layer_neuron_count = iNetwork.layer_neuron_count;
+        neuron_counts = i_network.neuron_counts;
         //Copy Neurons
-        neurons = iNetwork.neurons;
+        neurons = i_network.neurons;
         //Copy Weights
-        weights = iNetwork.weights;
+        weights = i_network.weights;
     }
     return *this;
 }
 
-//Comparison Operator
 bool NeuralNet::operator==(const NeuralNet &i_network) const {
     return (weights == i_network.weights);
 }
 
-//Inequality Operator
 bool NeuralNet::operator!=(const NeuralNet &i_network) const {
     return (weights != i_network.weights);
 }
 
-// Initialize Nueral Network with random weights in a uniform distribution
-void NeuralNet::initializeRandomWeights() {
+void NeuralNet::initialize_random() {
     // Setup random number generator
     std::random_device rd;
     // Generate random number as seed for twister engine
@@ -117,20 +111,19 @@ void NeuralNet::initializeRandomWeights() {
     }
 }
 
-//Export weights to specified file
-int NeuralNet::exportWeights(std::ofstream &file, bool clean) {
+int NeuralNet::export_weights_stream(std::ofstream &file, bool clean) {
     if (file.is_open()) {
         DoubleInt converter;
         if (!clean) {
             for (unsigned int i = 0; i < layer_count; i++) {
-                file << "Layer " << i << " count: " << layer_neuron_count[i] << std::endl;
+                file << "Layer " << i << " count: " << neuron_counts[i] << std::endl;
             }
         }
         else {
             file << layer_count << std::endl;
 
             for (unsigned int i = 0; i < layer_count; i++) {
-                file << layer_neuron_count[i] << ",";
+                file << neuron_counts[i] << ",";
             }
             file << std::endl;
         }
@@ -157,9 +150,9 @@ int NeuralNet::exportWeights(std::ofstream &file, bool clean) {
     }
 }
 
-int NeuralNet::importWeights(std::ifstream &file) {
+int NeuralNet::import_weights_stream(std::ifstream &file) {
     if (!file.is_open()) {
-        std::cout << "File is not open for importWeights.\n";
+        std::cout << "File is not open for import_weights_stream.\n";
         return 1;
     }
 
@@ -206,7 +199,7 @@ int NeuralNet::importWeights(std::ifstream &file) {
     }
 
     //Check that neuron counts match
-    if (import_layer_neuron_count != layer_neuron_count) {
+    if (import_layer_neuron_count != neuron_counts) {
         return 3;
     }
 
@@ -216,10 +209,10 @@ int NeuralNet::importWeights(std::ifstream &file) {
     //Assign/Reize Weight Vectors to appropriate size [x][y] and initialize elements to 0.
     //+1 is to account for bias
     for (unsigned int i = 1; i < layer_count; i++) {
-        import_weights[i - 1].resize(layer_neuron_count[i]);
+        import_weights[i - 1].resize(neuron_counts[i]);
 
         for (std::vector<double> &row: import_weights[i - 1]) {
-            row.assign(layer_neuron_count[i - 1] + 1, 0);
+            row.assign(neuron_counts[i - 1] + 1, 0);
         }
     }
 
@@ -247,28 +240,27 @@ int NeuralNet::importWeights(std::ifstream &file) {
     return 0;
 }
 
-//FeedForward Function, calculate output based on inputs.
-int NeuralNet::feedForward(const std::vector<double> &input) {
+int NeuralNet::feed_forward(const std::vector<double> &input) {
     //If the size of the input vector is not the same as the Neural Network input layer, return error code.
-    if (input.size() != layer_neuron_count[0]) {
+    if (input.size() != neuron_counts[0]) {
         return 1;
     }
     else {
         //Assign input_Neurons to match input. Last element of input_Neurons should not be touched as it is bias.
         // For each loops not being used throughout function to avoid bias nuerons and needing iterators for accessing multiple vectors.
-        for (unsigned int i = 0; i < layer_neuron_count[0]; i++) {
+        for (unsigned int i = 0; i < neuron_counts[0]; i++) {
             neurons[0][i] = input[i];
         }
 
         //Calculate through all layers
         for (unsigned int i = 1; i < layer_count; i++) {
             //For each neuron in each layer after input, calculate value
-            for (unsigned int j = 0; j < layer_neuron_count[i]; j++) {
+            for (unsigned int j = 0; j < neuron_counts[i]; j++) {
                 // Reset Nueron to 0 before calculating
                 neurons[i][j] = 0;
 
                 //Sum the value of all weights*previous layer neuron value
-                for (unsigned int k = 0; k <= layer_neuron_count[i - 1]; k++) {
+                for (unsigned int k = 0; k <= neuron_counts[i - 1]; k++) {
                     neurons[i][j] += neurons[i - 1][k] * weights[i - 1][j][k];
                 }
 
@@ -303,36 +295,6 @@ int NeuralNet::mutate(const double &radius) {
     return 0;
 }
 
-void NeuralNet::displayOutput() {
-    for (double &element: neurons[layer_count - 1]) {
-        std::cout << element << " ";
-    }
-    std::cout << std::endl;
-}
-
 std::vector<double> NeuralNet::get_output() const {
     return neurons[layer_count - 1];
-}
-
-
-// Display Neural Network values. Incomplete, prototype.
-// Returns 0 on success, or code on error
-int NeuralNet::display() {
-    for (unsigned int i = 0; i < layer_count; i++) {
-        std::cout << "Layer " << i << " count: " << layer_neuron_count[i] << std::endl;
-    }
-
-    for (unsigned int i = 0; i < layer_count - 1; i++) {
-        std::cout << "Layer " << i << " to layer " << i + 1 << " weights: \n";
-
-        for (std::vector<double> &row: weights[i]) {
-            for (double &element: row) {
-                std::cout << element << ",";
-            }
-            std::cout << ";";
-        }
-        std::cout << std::endl;
-    }
-
-    return 0;
 }
