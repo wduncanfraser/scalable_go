@@ -20,9 +20,6 @@ addons:
       - g++-5
       - clang-3.7
 
-before_install:
-  - if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then pip install --user cpp-coveralls; fi
-
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cmake; fi
   - if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gcc5; fi
@@ -33,7 +30,4 @@ install:
   - ${CXX} --version
   - ${CXX} -v
 
-script: ./travis.sh $TRAVIS_OS_NAME $CXX
-
-after_success:
-  - if [ "$CXX" = "g++-5" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then coveralls --exclude lib --exclude tests --gcov-options '\-lp'; fi
+script: ./travis.sh
