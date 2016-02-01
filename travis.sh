@@ -11,7 +11,7 @@ cd build
 cmake ..
 
 # Run Tests
-if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then
+if [ "$CXX" = "g++-5" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then
     ./configure --enable-gcov && make && make check
 else
     make

@@ -36,4 +36,4 @@ install:
 script: ./travis.sh $TRAVIS_OS_NAME $CXX
 
 after_success:
-  - if [ "$CXX" = "g++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then coveralls --exclude lib --exclude tests --gcov-options '\-lp'; fi
+  - if [ "$CXX" = "g++-5" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then coveralls --exclude lib --exclude tests --gcov-options '\-lp'; fi
