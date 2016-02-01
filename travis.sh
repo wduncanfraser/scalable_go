@@ -10,3 +10,4 @@ cmake ..
 # Run Tests
 make
 ./neuralnet_tests
+./goboard_tests
