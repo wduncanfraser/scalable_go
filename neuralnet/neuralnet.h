@@ -1,11 +1,8 @@
-/* Class definition of Neural Network with arbitrary layers
-Author: W. Duncan Fraser
-Email: duncan@wduncanfraser.com
+// Prototype of Neural Network class with arbitrary layers
+// Author: W. Duncan Fraser
+// Email: duncan@wduncanfraser.com
 
-
-*/
-
-//if-defs to prevent multiple inclusions.
+//ifdef to prevent multiple inclusions.
 #ifndef NEURALNET_H
 #define NEURALNET_H
 
