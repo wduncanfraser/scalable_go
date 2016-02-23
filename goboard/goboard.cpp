@@ -3,10 +3,159 @@
 // Email: duncan@wduncanfraser.com
 
 #include <vector>
+#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 
 #include "goboard.h"
+
+XYCoordinate::XYCoordinate() : x(0), y(0) { }
+
+XYCoordinate::XYCoordinate(const uint8_t i_x, const uint8_t i_y) : x(i_x), y(i_y) { }
+
+bool XYCoordinate::operator==(const XYCoordinate &i_coordinate) const {
+    return (x == i_coordinate.x) && (y == i_coordinate.y);
+}
+
+XYCoordinate& XYCoordinate::operator=(const XYCoordinate &i_coordinate) {
+    if(this != &i_coordinate)
+    {
+        //Copy coordinates
+        x = i_coordinate.x;
+        y = i_coordinate.y;
+    }
+    return *this;
+}
+
+GoString::GoString(uint8_t i_board_size) {
+    // Validate max is less than maximum board size, or throw
+    if (i_board_size > 19) {
+        throw GoBoardInitError();
+    }
+    board_size = i_board_size;
+}
+
+GoString::~GoString() { }
+
+bool GoString::operator==(const GoString &i_string) const {
+    return (members == i_string.members) && (liberty == i_string.liberty) && (board_size == i_string.board_size);
+}
+
+GoString& GoString::operator=(const GoString &i_string) {
+    if(this != &i_string)
+    {
+        //Copy variables
+        members = i_string.members;
+        liberty = i_string.liberty;
+        board_size = i_string.board_size;
+    }
+    return *this;
+}
+
+bool GoString::append_member(const XYCoordinate &coordinate) {
+    // Ensure member is not in liberty
+    if (liberty.size() > 0) {
+        if (std::find(liberty.begin(), liberty.end(), coordinate) != liberty.end())
+        {
+            return false;
+        }
+    }
+
+    // Setup variable for tracking if adjacent
+    bool adjacent = false;
+    // Check if valid member
+    // If this is the first element, nothing to check
+    if (members.size() > 0) {
+        // Check if coordinate is already in members
+        if (std::find(members.begin(), members.end(), coordinate) != members.end())
+        {
+            return false;
+        }
+        // Check if the coordinate is adjacent to existing members
+        // Rather than checking every element in the string for adjacency, get the adjacent pieces around coordinate
+        // and do a std::find against members
+        std::vector<XYCoordinate> adjacent_coordinates = get_adjacent(coordinate, board_size);
+
+        for (const XYCoordinate &element: adjacent_coordinates) {
+            if (std::find(members.begin(), members.end(), element) != members.end()) {
+                // If found, set adjacent to true and break
+                adjacent = true;
+                break;
+            }
+        }
+    }
+    else {
+        // override adjacent to true for the first member
+        adjacent = true;
+    }
+
+    // If we got this far, and piece is adjacent, append
+    if (adjacent) {
+        members.push_back(coordinate);
+    }
+    return adjacent;
+}
+
+bool GoString::append_liberty(const XYCoordinate &coordinate) {
+    // Ensure liberty coordinate is not in members, and that members has at least 1 element
+    if (members.size() > 0) {
+        if (std::find(members.begin(), members.end(), coordinate) != members.end())
+        {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+    // Setup variable for tracking if adjacent
+    bool adjacent = false;
+
+    // Check if valid liberty member
+    // Check if coordinate is already in liberty
+    if (std::find(liberty.begin(), liberty.end(), coordinate) != liberty.end())
+    {
+        return false;
+    }
+    // Check if the coordinate is adjacent to existing members
+    // Rather than checking every element in the string for adjacency, get the adjacent pieces around coordinate
+    // and do a std::find against members
+    std::vector<XYCoordinate> adjacent_coordinates = get_adjacent(coordinate, board_size);
+
+    for (const XYCoordinate &element: adjacent_coordinates) {
+        if (std::find(members.begin(), members.end(), element) != members.end()) {
+            // If found, set adjacent to true and break
+            adjacent = true;
+            break;
+        }
+    }
+
+    // If we got this far, and piece is adjacent, append
+    if (adjacent) {
+        liberty.push_back(coordinate);
+    }
+    return adjacent;
+}
+
+const std::vector<XYCoordinate> GoString::get_members() const {
+    return members;
+}
+
+const std::vector<XYCoordinate> GoString::get_liberty() const {
+    return liberty;
+}
+
+const uint8_t GoString::get_member_count() const {
+    return uint8_t(members.size());
+}
+
+const uint8_t GoString::get_liberty_count() const {
+    return uint8_t(liberty.size());
+}
+
+const uint8_t GoString::get_size() const {
+    return board_size;
+}
 
 Move::Move(const std::vector<std::vector<uint8_t>> &i_board, const uint8_t i_piece_x, const uint8_t i_piece_y) {
     // Check that board dimensions are between 3 and 19, and square; otherwise throw.
@@ -39,9 +188,69 @@ bool Move::operator==(const Move &i_move) const {
     return (board == i_move.board) && (piece_x == i_move.piece_x) && (piece_y == i_move.piece_y);
 }
 
+Move& Move::operator=(const Move &i_move) {
+    if(this != &i_move)
+    {
+        //Copy variables
+        board = i_move.board;
+        piece_x = i_move.piece_x;
+        piece_y = i_move.piece_y;
+    }
+    return *this;
+}
+
 const inline bool Move::within_bounds(const uint8_t x, const uint8_t y) const {
     // Check to make sure coordinates are not greater than board size. Both are unsigned, so no <0 checks required.
     return ((x < board.size()) && (y < board.size()));
+}
+
+const GoString Move::construct_string(GoString i_string, const bool color) const {
+    // take the passed string, and determine all the elements and liberty
+    // Setup list of coordinates to check, starting with passed members
+    std::vector<XYCoordinate> coordinates_check = i_string.get_members();
+
+    while(coordinates_check.size() != 0) {
+        // TODO: Make this faster
+        // Check adjacency for the first element
+        std::vector<XYCoordinate> adjacent_coordinates = get_adjacent(coordinates_check.front(), uint8_t(board.size()));
+        for (XYCoordinate &element: adjacent_coordinates) {
+            if (board[element.y][element.x] == 0) {
+                // If blank, attempt to append to liberty. Fail silently if already part of liberty.
+                i_string.append_liberty(element);
+            }
+            else if (board[element.y][element.x] == get_mask(color)) {
+                // If part of string, attempt to append to members. If successful appending to members, add to check list
+                if(i_string.append_member(element)) {
+                    coordinates_check.push_back(element);
+                }
+            }
+        }
+
+        // Done checking, remove first element from check list
+        coordinates_check.erase(coordinates_check.begin());
+    }
+
+    return i_string;
+}
+
+bool Move::remove_string(const GoString &i_string, const bool color) {
+    // Setup temporary board to test string against
+    std::vector<std::vector<uint8_t>> temp_board = board;
+    // Loop through each element, removing elements
+    for (const XYCoordinate &element: i_string.get_members()) {
+        if (temp_board[element.y][element.x] == get_mask(color)) {
+            temp_board[element.y][element.x] = 0;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // If we made it here, all elements were removed from temp_board correctly. set board to temp_board
+    // and return true
+    board = temp_board;
+    return true;
 }
 
 int Move::check_move(const bool color) {
@@ -52,36 +261,63 @@ int Move::check_move(const bool color) {
     // Place the piece on the board
     board[piece_y][piece_x] = get_mask(color);
 
-    // Default liberty to 0
-    uint8_t liberty = 0;
-
     // Calculate the effects on the board
     // Check adjacent pieces to see if they are part of the same string, blank, or the enemy
-    // Start Left
-    if (this->within_bounds(piece_x - uint8_t(1), piece_y)) {
-        if (board[piece_y][piece_x - uint8_t(1)] == 0) {
-            liberty += 1;
+    GoString move_string(uint8_t(board.size()));
+    // Append the placed piece to the String
+    move_string.append_member(XYCoordinate(piece_x, piece_y));
+
+    // Setup vector to hold enemy pieces
+    std::vector<XYCoordinate> enemy_pieces;
+
+    // Get the adjacent pieces and check their classification
+    std::vector<XYCoordinate> adjacent_pieces = get_adjacent(XYCoordinate(piece_x, piece_y), uint8_t(board.size()));
+
+    for (const XYCoordinate &element: adjacent_pieces) {
+        if (board[element.y][element.x] == 0) {
+            move_string.append_liberty(element);
+        }
+        else if (board[element.y][element.x] == get_mask(color)) {
+            move_string.append_member(element);
+        }
+        else {
+            enemy_pieces.push_back(element);
         }
     }
-    // Right
-    if (this->within_bounds(piece_x + uint8_t(1), piece_y)) {
-        if (board[piece_y][piece_x + uint8_t(1)] == 0) {
-            liberty += 1;
+
+    // Check impact on enemy pieces
+    for (const XYCoordinate &element: enemy_pieces) {
+        // Double check that the piece still exists (wasn't remove as part of a prior string)
+        // If empty, skip
+        if (board[element.y][element.x] == 0) {
+            continue;
+        }
+        GoString temp_string(uint8_t(board.size()));
+        temp_string.append_member(element);
+        temp_string = this->construct_string(temp_string, !color);
+
+        // If the enemy string has no liberty, remove from the board
+        if (temp_string.get_liberty_count() == 0) {
+            if (!this->remove_string(temp_string, !color)) {
+                // If we failed to remove the string we just built... something is very very wrong
+                throw GoBoardUnknownError();
+            }
         }
     }
-    // Down
-    if (this->within_bounds(piece_x, piece_y - uint8_t(1))) {
-        if (board[piece_y - uint8_t(1)][piece_x] == 0) {
-            liberty += 1;
+
+    // Construct the string to determine string liberty
+    // On single pieces, This will account for new liberty due to removed pieces
+    move_string = this->construct_string(move_string, color);
+
+    // If the move_string has 0 liberty, remove it from the board
+    if (move_string.get_liberty_count() == 0) {
+        if (!this->remove_string(move_string, color)) {
+            // If we failed to remove the string we just built... something is very very wrong
+            throw GoBoardUnknownError();
         }
     }
-    // UP
-    if (this->within_bounds(piece_x, piece_y + uint8_t(1))) {
-        if (board[piece_y + uint8_t(1)][piece_x] == 0) {
-            liberty += 1;
-        }
-    }
-    return int(liberty);
+
+    return int(move_string.get_liberty_count());
 }
 
 GoBoard::GoBoard(const uint8_t board_size) {
@@ -186,7 +422,7 @@ bool GoBoard::generate_moves(const bool color) {
         }
     }
 
-    // Return true if
+    // Return true if there are any moves
     return move_list.size() != 0;
 }
 

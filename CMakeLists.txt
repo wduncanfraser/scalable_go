@@ -8,7 +8,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/")
 set(NET_BENCHMARK
         benchmark_neuralnet.cpp)
 
+set(MOVESET_EXAMPLE
+        basic_moveset.cpp)
+
 add_executable(benchmark_neuralnet ${NET_BENCHMARK})
+
+add_executable(basic_moveset ${MOVESET_EXAMPLE})
 
 include_directories(goboard neuralnet)
 
@@ -17,3 +22,4 @@ add_subdirectory(neuralnet)
 add_subdirectory(tests)
 
 target_link_libraries(benchmark_neuralnet neuralnet)
+target_link_libraries(basic_moveset goboard)
