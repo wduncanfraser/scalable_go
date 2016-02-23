@@ -5,6 +5,8 @@
 #ifndef SCALABLE_GO_GOBOARD_H
 #define SCALABLE_GO_GOBOARD_H
 
+#include <algorithm>
+
 #define BLACK_MASK 1
 #define WHITE_MASK 3
 #define STONE_COUNT 180
@@ -176,6 +178,12 @@ private:
 
     // Move history
     std::vector<Move> move_history;
+
+    // Flag to determine if move_list is dirty
+    bool move_list_dirty;
+
+    // Flag to determine last move_list color
+    bool move_list_color;
 public:
     // Constructor with size specification
     GoBoard(const uint8_t board_size);

@@ -3,7 +3,6 @@
 // Email: duncan@wduncanfraser.com
 
 #include <vector>
-#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 
@@ -409,10 +408,13 @@ bool GoBoard::generate_moves(const bool color) {
             // p short for potential. Create a move with the piece to be assigned
             Move p_board(board, x, y);
 
-            //Based on the placed piece, determine the effect on the board
-            p_board.check_move(color);
+            // Based on the placed piece, determine the effect on the board
+            // Check if the move is a suicide (has no liberty), as suicides are not allowed
+            if (p_board.check_move(color) == 0) {
+                continue;
+            }
 
-            //Check if the outcome is a preexisting board state
+            // Check if the outcome is a preexisting board state
             if (this->check_move_history(p_board)) {
                 continue;
             }
