@@ -23,7 +23,14 @@ public:
 // Helper functions
 // Function to get piece mask in int format from bool
 // black = 0, white = 1
-inline uint8_t get_mask(const bool color);
+inline uint8_t get_mask(const bool color) {
+    if (color) {
+        return uint8_t(WHITE_MASK);
+    }
+    else {
+        return uint8_t(BLACK_MASK);
+    }
+}
 
 // Struct for holding a possible move
 struct Move {

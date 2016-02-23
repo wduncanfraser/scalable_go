@@ -8,15 +8,6 @@
 
 #include "goboard.h"
 
-inline uint8_t get_mask(const bool color) {
-    if (color) {
-        return WHITE_MASK;
-    }
-    else {
-        return BLACK_MASK;
-    }
-}
-
 Move::Move(const std::vector<std::vector<uint8_t>> &i_board, const uint8_t i_piece_x, const uint8_t i_piece_y) {
     // Check that board dimensions are between 3 and 19, and square; otherwise throw.
     unsigned long x_dim = i_board.size();
@@ -63,6 +54,7 @@ bool Move::check_move(const bool color) {
 
     // Calculate the effects on the board
     // Check adjacent pieces to see if they are part of the same string or the enemy
+    return true;
 }
 
 GoBoard::GoBoard(const uint8_t board_size) {
@@ -166,5 +158,8 @@ bool GoBoard::generate_moves(const bool color) {
             move_list.push_back(p_board);
         }
     }
+
+    // Return true if
+    return move_list.size() != 0;
 }
 
