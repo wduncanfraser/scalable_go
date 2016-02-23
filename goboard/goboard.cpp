@@ -331,6 +331,8 @@ GoBoard::GoBoard(const uint8_t board_size) {
     for (std::vector<uint8_t> &row: board) {
         row.resize(board_size, 0);
     }
+    // Set flags
+    move_list_dirty = true;
 }
 
 GoBoard::GoBoard(const std::vector<std::vector<uint8_t>> &i_board) {
@@ -351,14 +353,19 @@ GoBoard::GoBoard(const std::vector<std::vector<uint8_t>> &i_board) {
 
     // Checks complete, assign board
     board = i_board;
+    // Set flags
+    move_list_dirty = true;
 }
 
-GoBoard::GoBoard(const GoBoard &i_goboard) : board(i_goboard.board), move_list(i_goboard.move_list) { }
+GoBoard::GoBoard(const GoBoard &i_goboard) : board(i_goboard.board), move_list(i_goboard.move_list),
+                                             move_history(i_goboard.move_history),
+                                             move_list_dirty(i_goboard.move_list_dirty),
+                                             move_list_color(i_goboard.move_list_color) { }
 
 GoBoard::~GoBoard() { }
 
 bool GoBoard::operator==(const GoBoard &i_board) const {
-    return board == i_board.board;
+    return (board == i_board.board) && (move_history == i_board.move_history);
 }
 
 const uint8_t GoBoard::get_size() const {
