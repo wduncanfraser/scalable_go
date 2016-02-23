@@ -59,3 +59,32 @@ TEST(goboard_basic_check, board_copy_blank) {
     GoBoard test2(test1);
     EXPECT_EQ(test1, test2);
 }
+
+TEST(goboard_basic_check, first_move_generation_count) {
+    GoBoard test(5);
+    test.generate_moves(0);
+    EXPECT_EQ(test.get_move_list().size(), 25);
+}
+
+TEST(goboard_basic_check, first_move_generation) {
+    uint8_t board_size = 3;
+    GoBoard test(board_size);
+    test.generate_moves(0);
+
+    std::vector<Move> test_move_list;
+    for (uint8_t y = 0; y < board_size; y++) {
+        for (uint8_t x = 0; x < board_size; x++) {
+            // Setup a blank board
+            std::vector<std::vector<uint8_t>> temp_board;
+            temp_board.resize(board_size);
+            for (std::vector<uint8_t> &row: temp_board) {
+                row.assign(board_size, 0);
+            }
+            // Assign piece to coordinates
+            temp_board[y][x] = get_mask(0);
+            test_move_list.push_back(Move(temp_board, x, y));
+        }
+    }
+
+    EXPECT_EQ(test_move_list, test.get_move_list());
+}
