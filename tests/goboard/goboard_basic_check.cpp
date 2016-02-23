@@ -9,6 +9,16 @@
 
 #include "goboard.h"
 
+TEST(goboard_basic_check, mask_black_check) {
+    // Validates that the right mask is given for black
+    EXPECT_EQ(1, get_mask(0));
+}
+
+TEST(goboard_basic_check, mask_white_check) {
+    // Validates that the right mask is given for white
+    EXPECT_EQ(3, get_mask(1));
+}
+
 TEST(goboard_basic_check, board_initialization_size) {
     // Validate that a board initialized with a specific size is of that size
     std::array<uint8_t, 17> board_inputs{ {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} };
@@ -63,7 +73,7 @@ TEST(goboard_basic_check, board_copy_blank) {
 TEST(goboard_basic_check, first_move_generation_count) {
     GoBoard test(5);
     test.generate_moves(0);
-    EXPECT_EQ(test.get_move_list().size(), 25);
+    EXPECT_EQ(25, test.get_move_list().size());
 }
 
 TEST(goboard_basic_check, first_move_generation) {

@@ -50,9 +50,10 @@ struct Move {
     // Returns true if within bounds. Otherwise, false.
     const inline bool within_bounds(const uint8_t x, const uint8_t y) const;
 
-    // Determines the impact of a move on the board. Returns true if valid move, otherwise false.
+    // Determines the impact of a move on the board. Returns -1 if the piece has already been placed, otherwise
+    // returns the liberty of the piece/string
     // black = 0, white = 1
-    bool check_move(const bool color);
+    int check_move(const bool color);
 };
 
 class GoBoard {

@@ -44,17 +44,44 @@ const inline bool Move::within_bounds(const uint8_t x, const uint8_t y) const {
     return ((x < board.size()) && (y < board.size()));
 }
 
-bool Move::check_move(const bool color) {
+int Move::check_move(const bool color) {
     // Check if the calculation has already been made (piece placed), as that is the most basic end case
     if (board[piece_y][piece_x] != 0) {
-        return false;
+        return -1;
     }
     // Place the piece on the board
     board[piece_y][piece_x] = get_mask(color);
 
+    // Default liberty to 0
+    uint8_t liberty = 0;
+
     // Calculate the effects on the board
-    // Check adjacent pieces to see if they are part of the same string or the enemy
-    return true;
+    // Check adjacent pieces to see if they are part of the same string, blank, or the enemy
+    // Start Left
+    if (this->within_bounds(piece_x - uint8_t(1), piece_y)) {
+        if (board[piece_y][piece_x - uint8_t(1)] == 0) {
+            liberty += 1;
+        }
+    }
+    // Right
+    if (this->within_bounds(piece_x + uint8_t(1), piece_y)) {
+        if (board[piece_y][piece_x + uint8_t(1)] == 0) {
+            liberty += 1;
+        }
+    }
+    // Down
+    if (this->within_bounds(piece_x, piece_y - uint8_t(1))) {
+        if (board[piece_y - uint8_t(1)][piece_x] == 0) {
+            liberty += 1;
+        }
+    }
+    // UP
+    if (this->within_bounds(piece_x, piece_y + uint8_t(1))) {
+        if (board[piece_y + uint8_t(1)][piece_x] == 0) {
+            liberty += 1;
+        }
+    }
+    return int(liberty);
 }
 
 GoBoard::GoBoard(const uint8_t board_size) {
