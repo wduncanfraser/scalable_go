@@ -58,4 +58,29 @@ int main() {
         }
         std::cout << std::endl;
     }
+
+    test2.make_move(test2.get_move_list()[0]);
+    std::cout << "White: Take move 1 on 3x3 board: \n";
+    for (int y = board_size - 1; y > -1; y--) {
+        for (uint8_t x = 0; x < board_size; x++) {
+            std::cout << "[" << int(test2.get_board()[y][x]) << "] ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+
+    test2.generate_moves(0);
+
+    std::cout << "Black: No follow up possible \n";
+    for (const Move &element: test2.get_move_list()) {
+        std::cout << "Possible move: \n";
+        for (int y = board_size - 1; y > -1; y--) {
+            for (uint8_t x = 0; x < board_size; x++) {
+                std::cout << "[" << int(element.board[y][x]) << "] ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
 }

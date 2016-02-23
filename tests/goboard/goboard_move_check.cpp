@@ -59,3 +59,5 @@ TEST(goboard_move_check, single_piece_surrounded) {
 
     EXPECT_EQ(0, test_move.check_move(0));
 }
+
+// TODO: Need a lot more unit testing on move generation

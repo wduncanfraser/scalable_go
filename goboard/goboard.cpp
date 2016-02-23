@@ -392,39 +392,78 @@ const bool GoBoard::check_move_history(const Move &i_move) const {
 }
 
 bool GoBoard::generate_moves(const bool color) {
-    // Clear out anything already in the move list
-    move_list.clear();
+    // Check if move list is dirty, so we don't generate the same list
+    if ((move_list_dirty) || (move_list_color != color)) {
+        // Clear out anything already in the move list
+        move_list.clear();
 
-    // Get the board size
-    uint8_t board_size = this->get_size();
+        // Get the board size
+        uint8_t board_size = this->get_size();
 
-    // Go through board element by element, checking for valid moves
-    for (uint8_t y = 0; y < board_size; y++) {
-        for (uint8_t x = 0; x < board_size; x++) {
-            // Check if there is a piece first, as that is the most basic end case
-            if (board[y][x] != 0) {
-                continue;
+        // Go through board element by element, checking for valid moves
+        for (uint8_t y = 0; y < board_size; y++) {
+            for (uint8_t x = 0; x < board_size; x++) {
+                // Check if there is a piece first, as that is the most basic end case
+                if (board[y][x] != 0) {
+                    continue;
+                }
+                // p short for potential. Create a move with the piece to be assigned
+                Move p_board(board, x, y);
+
+                // Based on the placed piece, determine the effect on the board
+                // Check if the move is a suicide (has no liberty), as suicides are not allowed
+                if (p_board.check_move(color) == 0) {
+                    continue;
+                }
+
+                // Check if the outcome is a preexisting board state
+                if (this->check_move_history(p_board)) {
+                    continue;
+                }
+
+                // All checks have passed, append to the move_list
+                move_list.push_back(p_board);
             }
-            // p short for potential. Create a move with the piece to be assigned
-            Move p_board(board, x, y);
-
-            // Based on the placed piece, determine the effect on the board
-            // Check if the move is a suicide (has no liberty), as suicides are not allowed
-            if (p_board.check_move(color) == 0) {
-                continue;
-            }
-
-            // Check if the outcome is a preexisting board state
-            if (this->check_move_history(p_board)) {
-                continue;
-            }
-
-            // All checks have passed, append to the move_list
-            move_list.push_back(p_board);
         }
+
+        // Set move_list flags
+        move_list_dirty = false;
+        move_list_color = color;
     }
 
     // Return true if there are any moves
     return move_list.size() != 0;
 }
 
+void GoBoard::make_move(const Move &i_move) {
+    // Set bool for move color
+    bool move_color;
+    // Get the move color
+    if (i_move.board[i_move.piece_y][i_move.piece_x] == get_mask(0)) {
+        move_color = 0;
+    }
+    else if (i_move.board[i_move.piece_y][i_move.piece_x] == get_mask(1)) {
+        move_color = 1;
+    }
+    else {
+        throw GoBoardBadMove();
+    }
+
+    // Generate moves
+    this->generate_moves(move_color);
+
+    // Check if move is in move list
+    if (std::find(move_list.begin(), move_list.end(), i_move) != move_list.end())
+    {
+        // Move is valid, update board
+        move_history.push_back(i_move);
+        board = i_move.board;
+
+        // Set move_list to dirty
+        move_list_dirty = true;
+    }
+    else {
+        // Not a valid move, throw
+        throw GoBoardBadMove();
+    }
+}

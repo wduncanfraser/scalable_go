@@ -22,6 +22,11 @@ public:
     GoBoardUnknownError() : std::runtime_error("GoBoardUnknownError") { }
 };
 
+class GoBoardBadMove : public std::runtime_error {
+public:
+    GoBoardBadMove() : std::runtime_error("GoBoardBadMove") { }
+};
+
 // Struct for holding x,y coordinates
 struct XYCoordinate {
     uint8_t x;
@@ -223,7 +228,8 @@ public:
     bool generate_moves(const bool color);
 
     // Makes a move
-    bool make_move(const Move &i_move);
+    // Throws GoBoardBadMove exception if move is not valid
+    void make_move(const Move &i_move);
 };
 
 
