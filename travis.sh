@@ -6,7 +6,8 @@ cd build
 
 # Build project
 cmake ..
+make
 
 # Run Tests
-make
 ./neuralnet_tests
+./goboard_tests

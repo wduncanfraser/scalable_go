@@ -16,7 +16,7 @@
 #define OUTPUT 1
 #define MUTATER 0.01
 
-TEST(basic_check, input_difference) {
+TEST(neuralnet_basic_check, input_difference) {
     // Check that different inputs result in different outputs on the same network
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     test1.initialize_random();
@@ -36,7 +36,7 @@ TEST(basic_check, input_difference) {
     EXPECT_NE(output1, output2);
 }
 
-TEST(basic_check, mutator_mutates) {
+TEST(neuralnet_basic_check, mutator_mutates) {
     // Check that the mutator actually changes the network
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     test1.initialize_random();
@@ -47,7 +47,7 @@ TEST(basic_check, mutator_mutates) {
     EXPECT_NE(test1, test2);
 }
 
-TEST(basic_check, mutator_output) {
+TEST(neuralnet_basic_check, mutator_output) {
     // Check that output changes after mutator
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     test1.initialize_random();
@@ -65,7 +65,7 @@ TEST(basic_check, mutator_output) {
     EXPECT_NE(test1.get_output(), test2.get_output());
 }
 
-TEST(basic_check, write_to_file) {
+TEST(neuralnet_basic_check, write_to_file) {
     // Check that there is no data loss/roundng error in exporting the network to file
     NeuralNet test1(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     test1.initialize_random();
