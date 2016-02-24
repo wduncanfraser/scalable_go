@@ -14,7 +14,7 @@ int main() {
     test.generate_moves(0);
 
     std::cout << "First move on 3x3 board: \n";
-    for (const Move &element: test.get_move_list()) {
+    for (const Move &element : test.get_move_list()) {
         std::cout << "Possible move: \n";
         for (int y = board_size - 1; y > -1; y--) {
             for (uint8_t x = 0; x < board_size; x++) {
@@ -34,7 +34,7 @@ int main() {
     test2.generate_moves(0);
 
     std::cout << "Black: No suicide on 3x3 board: \n";
-    for (const Move &element: test2.get_move_list()) {
+    for (const Move &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
         for (int y = board_size - 1; y > -1; y--) {
             for (uint8_t x = 0; x < board_size; x++) {
@@ -48,7 +48,7 @@ int main() {
     test2.generate_moves(1);
 
     std::cout << "White: Capture on 3x3 board: \n";
-    for (const Move &element: test2.get_move_list()) {
+    for (const Move &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
         for (int y = board_size - 1; y > -1; y--) {
             for (uint8_t x = 0; x < board_size; x++) {
@@ -73,7 +73,7 @@ int main() {
     test2.generate_moves(0);
 
     std::cout << "Black: No follow up possible \n";
-    for (const Move &element: test2.get_move_list()) {
+    for (const Move &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
         for (int y = board_size - 1; y > -1; y--) {
             for (uint8_t x = 0; x < board_size; x++) {

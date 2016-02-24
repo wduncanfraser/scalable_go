@@ -24,7 +24,7 @@ TEST(goboard_basic_check, board_initialization_size) {
     std::array<uint8_t, 17> board_inputs{ {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19} };
     std::array<uint8_t, 17> board_outputs;
 
-    for(uint8_t i = 0; i < 17; i++) {
+    for (uint8_t i = 0; i < 17; i++) {
         GoBoard test_board(board_inputs[i]);
         board_outputs[i] = test_board.get_size();
     }
@@ -47,10 +47,10 @@ TEST(goboard_basic_check, board_initialized_blank) {
     std::array<std::vector<std::vector<uint8_t>>, 17> expected_boards;
     std::array<std::vector<std::vector<uint8_t>>, 17> output_boards;
 
-    for(uint8_t i = 0; i < 17; i++) {
+    for (uint8_t i = 0; i < 17; i++) {
         // Initialize expected board
         expected_boards[i].resize(board_inputs[i]);
-        for (std::vector<uint8_t> &row: expected_boards[i]) {
+        for (std::vector<uint8_t> &row : expected_boards[i]) {
             row.assign(board_inputs[i], 0);
         }
 
@@ -87,7 +87,7 @@ TEST(goboard_basic_check, first_move_generation) {
             // Setup a blank board
             std::vector<std::vector<uint8_t>> temp_board;
             temp_board.resize(board_size);
-            for (std::vector<uint8_t> &row: temp_board) {
+            for (std::vector<uint8_t> &row : temp_board) {
                 row.assign(board_size, 0);
             }
             // Assign piece to coordinates

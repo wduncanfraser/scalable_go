@@ -33,13 +33,13 @@ int main() {
     std::vector<double> testInput, testInput2;
     testInput.assign(INPUT, 0);
 
-    for (double &element: testInput) {
+    for (double &element : testInput) {
         element = distribution(generator);
     }
 
-    //Start timing for feedforward
+    // Start timing for feedforward
     start = std::chrono::system_clock::now();
-    //#pragma omp parallel for firstprivate(test1)
+    // #pragma omp parallel for firstprivate(test1)
     for (int i = 0; i < 1000000; i++) {
         test1.feed_forward(testInput);
     }

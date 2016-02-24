@@ -2,8 +2,8 @@
 // Author: W. Duncan Fraser
 // Email: duncan@wduncanfraser.com
 
-#ifndef SCALABLE_GO_GOBOARD_H
-#define SCALABLE_GO_GOBOARD_H
+#ifndef GOBOARD_GOBOARD_H_
+#define GOBOARD_GOBOARD_H_
 
 #include <algorithm>
 
@@ -13,17 +13,17 @@
 
 // GoBoard exceptions
 class GoBoardInitError : public std::runtime_error {
-public:
+ public:
     GoBoardInitError() : std::runtime_error("GoBoardInitError") { }
 };
 
 class GoBoardUnknownError : public std::runtime_error {
-public:
+ public:
     GoBoardUnknownError() : std::runtime_error("GoBoardUnknownError") { }
 };
 
 class GoBoardBadMove : public std::runtime_error {
-public:
+ public:
     GoBoardBadMove() : std::runtime_error("GoBoardBadMove") { }
 };
 
@@ -41,7 +41,7 @@ struct XYCoordinate {
     // Comparison Operator
     bool operator==(const XYCoordinate &i_coordinate) const;
 
-    //Copy operator
+    // Copy operator
     XYCoordinate& operator= (const XYCoordinate &i_coordinate);
 };
 
@@ -51,8 +51,7 @@ struct XYCoordinate {
 inline uint8_t get_mask(const bool color) {
     if (color) {
         return uint8_t(WHITE_MASK);
-    }
-    else {
+    } else {
         return uint8_t(BLACK_MASK);
     }
 }
@@ -89,12 +88,13 @@ inline bool check_adjacent(const XYCoordinate &i_coordinate_1, const XYCoordinat
     // Take coordinate_1 and see if coordinate_2 is one of the adjacent grids
     std::vector<XYCoordinate> adjacent_coordinates = get_adjacent(i_coordinate_1, max);
 
-    return (std::find(adjacent_coordinates.begin(), adjacent_coordinates.end(), i_coordinate_2) != adjacent_coordinates.end());
+    return (std::find(adjacent_coordinates.begin(),
+                      adjacent_coordinates.end(), i_coordinate_2) != adjacent_coordinates.end());
 }
 
 // Class for holding a Go string (series of adjacently connected stones of the same color).
 class GoString {
-private:
+ private:
     // String member coordinates
     std::vector<XYCoordinate> members;
 
@@ -103,9 +103,10 @@ private:
 
     // Board size for String
     uint8_t board_size;
-public:
+
+ public:
     // Default constructor
-    GoString(uint8_t i_board_size);
+    explicit GoString(uint8_t i_board_size);
 
     // Destructor
     virtual ~GoString();
@@ -113,7 +114,7 @@ public:
     // Comparison Operator
     bool operator==(const GoString &i_string) const;
 
-    //Copy operator
+    // Copy operator
     GoString& operator= (const GoString &i_string);
 
     // Function for appending a member to the string. Returns true on success, or false on failure
@@ -153,7 +154,7 @@ struct Move {
     // Comparison Operator
     bool operator==(const Move &i_move) const;
 
-    //Copy operator
+    // Copy operator
     Move& operator= (const Move &i_move);
 
     // Check to make sure coordinates are within the bounds of the Go Board.
@@ -167,14 +168,14 @@ struct Move {
     // Returns true on success
     bool remove_string(const GoString &i_string, const bool color);
 
-    // Determines the impact of a move on the board (modifies board). Returns -1 if the piece has already been placed, otherwise
-    // returns the liberty of the piece/string
+    // Determines the impact of a move on the board (modifies board). Returns -1 if the piece has already been placed,
+    // otherwise returns the liberty of the piece/string
     // black = 0, white = 1
     int check_move(const bool color);
 };
 
 class GoBoard {
-private:
+ private:
     // Game board
     std::vector<std::vector<uint8_t>> board;
 
@@ -189,12 +190,12 @@ private:
 
     // Flag to determine last move_list color
     bool move_list_color;
-public:
+ public:
     // Constructor with size specification
-    GoBoard(const uint8_t board_size);
+    explicit GoBoard(const uint8_t board_size);
 
     // Constructor with board passed as a vector
-    GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
+    explicit GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
 
     // Copy Constructor
     GoBoard(const GoBoard &i_goboard);
@@ -211,7 +212,7 @@ public:
     // Function to get current board state
     const std::vector<std::vector<uint8_t>> get_board() const;
 
-    //Function to get the move list
+    // Function to get the move list
     const std::vector<Move> get_move_list() const;
 
     // Check to make sure coordinates are within the bounds of the Go Board.
@@ -233,4 +234,4 @@ public:
 };
 
 
-#endif //SCALABLE_GO_GOBOARD_H
+#endif  // GOBOARD_GOBOARD_H_
