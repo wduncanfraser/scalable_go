@@ -15,10 +15,11 @@ add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
 add_executable(basic_moveset ${MOVESET_EXAMPLE})
 
-include_directories(goboard neuralnet)
+include_directories(goboard neuralnet ab_prune)
 
 add_subdirectory(goboard)
 add_subdirectory(neuralnet)
+add_subdirectory(ab_prune)
 add_subdirectory(tests)
 
 target_link_libraries(benchmark_neuralnet neuralnet)
