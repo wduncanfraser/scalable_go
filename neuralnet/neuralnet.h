@@ -5,6 +5,7 @@
 #define NEURALNET_NEURALNET_H_
 
 #include <vector>
+#include <fstream>
 
 // Support function for calculating activate.
 // Declared inline as it is only 1 line to increase speed.

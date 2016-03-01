@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <vector>
+#include <cstdint>
+#include <stdexcept>
 
 #define BLACK_MASK 1
 #define WHITE_MASK 3

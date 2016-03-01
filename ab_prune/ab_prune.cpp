@@ -1,12 +1,11 @@
 // Copyright [2016] <duncan@wduncanfraser.com>
 // Implementation of scalable_go_ab_prune
 
-#include <iostream>
-#include <array>
-#include <cstdint>
 #include <algorithm>
-#include <limits>
+#include <array>
 #include <vector>
+#include <cstdint>
+#include <limits>
 #include <cmath>
 
 #include "ab_prune.h"
@@ -144,7 +143,7 @@ GoBoardNeuralNet::GoBoardNeuralNet(const uint8_t board_size) {
     }
 
     for (uint16_t i = 0; i <= segments.size(); i++) {
-        
+
     }
 }
 

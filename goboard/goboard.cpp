@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <vector>
 #include <cstdint>
-#include <stdexcept>
 
 #include "goboard.h"
 

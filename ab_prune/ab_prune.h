@@ -6,12 +6,13 @@
 
 #include <vector>
 #include <cstdint>
+#include <stdexcept>
 
 #include "neuralnet.h"
 #include "goboard.h"
 
 #define SEGMENT_MIN 3
-#define SEGMENT_MAX 7
+#define SEGMENT_MAX 9
 #define SEGMENT_DIVISION 2
 
 // ABPrune exceptions
