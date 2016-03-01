@@ -9,6 +9,7 @@
 
 #define BLACK_MASK 1
 #define WHITE_MASK 3
+#define TEAM_MASK 3
 #define STONE_COUNT 180
 
 // GoBoard exceptions
