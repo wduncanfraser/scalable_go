@@ -12,6 +12,11 @@
 #include "goboard.h"
 
 std::vector<uint8_t> get_board_segments(const uint8_t board_size) {
+    // Validate appropriate board size was passed.
+    if ((board_size < 3) || (board_size > 19)) {
+        throw ABPruneSegmentError();
+    }
+
     // Look at macros defining segments and create array of possible segments less than or equal to board size.
     std::vector<uint8_t> segments;
 
@@ -125,4 +130,14 @@ double scalable_go_ab_prune(GoBoardNeuralNet &network, GoBoard &i_board, const i
         }
         return beta;
     }
+}
+
+int GoBoardNeuralNet::feed_forward(const std::vector<std::vector<double>> &input) {
+    // TODO(wdfraser): Implement
+    return 0;
+}
+
+const double GoBoardNeuralNet::get_output() const {
+    // TODO(wdfraser): Implement
+    return 0;
 }

@@ -42,6 +42,13 @@ class GoBoardNeuralNet {
     // Second layer neural net
     NeuralNet layer2;
  public:
+    // FeedForward Function, calculate output based on inputs.
+    // Returns 0 if no error
+    // Returns 1 if vector size does not match neural network input layer
+    int feed_forward(const std::vector<std::vector<double>> &input);
+
+    // Get output
+    const double get_output() const;
 };
 
 #endif  // AB_PRUNE_AB_PRUNE_H_

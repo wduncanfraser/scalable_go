@@ -11,3 +11,4 @@ make
 # Run Tests
 ./neuralnet_tests
 ./goboard_tests
+./ab_prune_tests
