@@ -1,11 +1,11 @@
+// Copyright [2016] <duncan@wduncanfraser.com>
 // Prototypes for Move Struct and GoBoard Class
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
 
 #ifndef GOBOARD_GOBOARD_H_
 #define GOBOARD_GOBOARD_H_
 
 #include <algorithm>
+#include <vector>
 
 #define BLACK_MASK 1
 #define WHITE_MASK 3
@@ -191,6 +191,7 @@ class GoBoard {
 
     // Flag to determine last move_list color
     bool move_list_color;
+
  public:
     // Constructor with size specification
     explicit GoBoard(const uint8_t board_size);

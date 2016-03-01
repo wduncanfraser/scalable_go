@@ -1,6 +1,5 @@
+// Copyright [2015, 2016] <duncan@wduncanfraser.com>
 // Implementation of Neural Network Class with arbitrary layers
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
 
 #include <string>
 #include <iostream>

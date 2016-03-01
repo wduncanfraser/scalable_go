@@ -1,7 +1,7 @@
+// Copyright [2016] <duncan@wduncanfraser.com>
 // Implementation of Move Struct and GoBoard class
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
 
+#include <algorithm>
 #include <vector>
 #include <cstdint>
 #include <stdexcept>
@@ -150,7 +150,7 @@ const uint8_t GoString::get_size() const {
 
 Move::Move(const std::vector<std::vector<uint8_t>> &i_board, const uint8_t i_piece_x, const uint8_t i_piece_y) {
     // Check that board dimensions are between 3 and 19, and square; otherwise throw.
-    unsigned long x_dim = i_board.size();
+    uint64_t x_dim = i_board.size();
 
     // Checking X dimension
     if ((x_dim < 3) || (x_dim > 19)) {
@@ -324,7 +324,7 @@ GoBoard::GoBoard(const uint8_t board_size) {
 
 GoBoard::GoBoard(const std::vector<std::vector<uint8_t>> &i_board) {
     // Check that board dimensions are between 3 and 19, and square; otherwise throw.
-    unsigned long x_dim = i_board.size();
+    uint64_t x_dim = i_board.size();
 
     // Checking X dimension
     if ((x_dim < 3) || (x_dim > 19)) {

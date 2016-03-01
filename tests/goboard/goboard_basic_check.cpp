@@ -1,6 +1,4 @@
-//
-// Created by W. Duncan Fraser on 1/28/16.
-//
+// Copyright [2016] <duncan@wduncanfraser.com>
 
 #include <vector>
 #include <array>

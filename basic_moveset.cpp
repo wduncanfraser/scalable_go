@@ -1,6 +1,5 @@
-//
-// Created by W. Duncan Fraser on 2/22/16.
-//
+// Copyright [2016] <duncan@wduncanfraser.com>
+// Test and visual inspection for basic movesets
 
 #include <vector>
 #include <iostream>

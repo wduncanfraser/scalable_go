@@ -1,9 +1,11 @@
+// Copyright [2015, 2016] <duncan@wduncanfraser.com>
+// Performance test for NeuralNet
+
 #include <iostream>
 #include <chrono>
 #include <vector>
 #include <random>
 
-//Test for NeuralNet
 #include "neuralnet.h"
 
 #define LAYERS 4

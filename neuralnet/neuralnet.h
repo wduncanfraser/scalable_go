@@ -1,10 +1,10 @@
+// Copyright [2015, 2016] <duncan@wduncanfraser.com>
 // Prototype of Neural Network class with arbitrary layers
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
 
-// ifdef to prevent multiple inclusions.
 #ifndef NEURALNET_NEURALNET_H_
 #define NEURALNET_NEURALNET_H_
+
+#include <vector>
 
 // Support function for calculating activate.
 // Declared inline as it is only 1 line to increase speed.

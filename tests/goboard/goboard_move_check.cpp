@@ -1,6 +1,4 @@
-//
-// Created by W. Duncan Fraser on 2/22/16.
-//
+// Copyright [2016] <duncan@wduncanfraser.com>
 
 #include <vector>
 #include <array>
@@ -60,4 +58,4 @@ TEST(goboard_move_check, single_piece_surrounded) {
     EXPECT_EQ(0, test_move.check_move(0));
 }
 
-// TODO: Need a lot more unit testing on move generation
+// TODO(wdfraser): Need a lot more unit testing on move generation
