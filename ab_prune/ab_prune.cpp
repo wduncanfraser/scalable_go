@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <cmath>
 
 #include "ab_prune.h"
 #include "goboard.h"
@@ -131,6 +132,27 @@ double scalable_go_ab_prune(GoBoardNeuralNet &network, GoBoard &i_board, const i
         return beta;
     }
 }
+
+GoBoardNeuralNet::GoBoardNeuralNet(const uint8_t board_size) {
+    // Get the segment sizes for the board_size. get_board_segments will throw if board is not of proper size
+    std::vector<uint8_t> segments = get_board_segments(board_size);
+
+    std::vector<uint16_t> segment_counts;
+
+    for (uint8_t &segment : segments) {
+        segment_counts.push_back((board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1)));
+    }
+
+    for (uint16_t i = 0; i <= segments.size(); i++) {
+        
+    }
+}
+
+GoBoardNeuralNet::GoBoardNeuralNet(const GoBoardNeuralNet &i_network) { }
+
+bool GoBoardNeuralNet::operator==(const GoBoardNeuralNet &i_network) const { }
+
+GoBoardNeuralNet::~GoBoardNeuralNet() { }
 
 int GoBoardNeuralNet::feed_forward(const std::vector<std::vector<double>> &input) {
     // TODO(wdfraser): Implement

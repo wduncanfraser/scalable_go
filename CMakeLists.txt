@@ -11,9 +11,14 @@ set(NET_BENCHMARK
 set(MOVESET_EXAMPLE
         basic_moveset.cpp)
 
+set(TRAINING
+        scalable_go_training.cpp)
+
 add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
 add_executable(basic_moveset ${MOVESET_EXAMPLE})
+
+add_executable(scalable_go_training ${TRAINING})
 
 include_directories(goboard neuralnet ab_prune)
 
@@ -24,3 +29,4 @@ add_subdirectory(tests)
 
 target_link_libraries(benchmark_neuralnet neuralnet)
 target_link_libraries(basic_moveset goboard)
+target_link_libraries(scalable_go_training ab_prune)
