@@ -39,6 +39,9 @@ int main() {
     test2.generate_moves(0);
 
     std::cout << "Black: No suicide on 3x3 board: \n";
+    std::cout << "Initial state: \n";
+    render_board(test2.get_board());
+
     for (const GoMove &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
 
@@ -48,6 +51,9 @@ int main() {
     test2.generate_moves(1);
 
     std::cout << "White: Capture on 3x3 board: \n";
+    std::cout << "Initial state: \n";
+    render_board(test2.get_board());
+
     for (const GoMove &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
 

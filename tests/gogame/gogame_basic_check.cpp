@@ -94,7 +94,7 @@ TEST(gogame_basic_check, first_move_generation) {
 
             // Assign piece to coordinates
             temp_board.board[y][x] = get_mask(0);
-            test_move_list.push_back(GoMove(temp_board, XYCoordinate(x,y)));
+            test_move_list.push_back(GoMove(temp_board, XYCoordinate(x, y)));
         }
     }
 

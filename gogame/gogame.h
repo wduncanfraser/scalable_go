@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <vector>
+#include <unordered_set>
 #include <cstdint>
 #include <stdexcept>
 
@@ -183,6 +184,7 @@ class GoMove {
     // Piece placed
     XYCoordinate piece;
 
+ public:
     // Constructor
     GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece);
 
