@@ -5,6 +5,7 @@
 #define GOGAME_GOGAME_H_
 
 #include <algorithm>
+#include <array>
 #include <vector>
 #include <cstdint>
 #include <stdexcept>
