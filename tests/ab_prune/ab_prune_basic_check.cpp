@@ -37,7 +37,7 @@ TEST(ab_prune_basic_check, improper_segment_size) {
 
 TEST(ab_prune_basic_check, basic_blank_translation) {
     // Validate basic translation for a 5x5 blank board is correct.
-    GoBoard test_board(5);
+    GoGame test_board(5);
     std::vector<std::vector<double>> expected_translation;
 
     // Assign expected values
@@ -59,17 +59,19 @@ TEST(ab_prune_basic_check, basic_blank_translation) {
 TEST(ab_prune_basic_check, populated_3x3_board_translation_black) {
     GoBoard test_board({{get_mask(false), 0, get_mask(false)}, {get_mask(true), get_mask(false), get_mask(true)},
                         {0, get_mask(true), 0}});
+    GoGame test_game(test_board);
 
     std::vector<std::vector<double>> expected_translation {{ 1, 0, 1, -1, 1, -1, 0, -1, 0 }};
 
-    EXPECT_EQ(expected_translation, scalable_go_network_translation(test_board, 0));
+    EXPECT_EQ(expected_translation, scalable_go_network_translation(test_game, 0));
 }
 
 TEST(ab_prune_basic_check, populated_3x3_board_translation_white) {
     GoBoard test_board({{get_mask(false), 0, get_mask(false)}, {get_mask(true), get_mask(false), get_mask(true)},
                         {0, get_mask(true), 0}});
+    GoGame test_game(test_board);
 
     std::vector<std::vector<double>> expected_translation {{ -1, 0, -1, 1, -1, 1, 0, 1, 0 }};
 
-    EXPECT_EQ(expected_translation, scalable_go_network_translation(test_board, 1));
+    EXPECT_EQ(expected_translation, scalable_go_network_translation(test_game, 1));
 }

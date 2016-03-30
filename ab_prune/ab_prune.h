@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 #include "neuralnet.h"
-#include "goboard.h"
+#include "gogame.h"
 
 #define SEGMENT_MIN 3
 #define SEGMENT_MAX 9
@@ -22,7 +22,7 @@ class ABPruneSegmentError : public std::runtime_error {
 };
 
 class ABPruneNetworkInitError : public std::runtime_error {
-public:
+ public:
     ABPruneNetworkInitError() : std::runtime_error("ABPruneNetworkInitError") { }
 };
 
@@ -30,16 +30,16 @@ public:
 // The specified size must be a valid segment size.
 std::vector<uint8_t> get_board_segments(const uint8_t board_size);
 
-// Function for taking the current board state of an instance of GoBoard and serializing it for ab_prune consumption.
+// Function for taking the current board state of an instance of GoGame and serializing it for ab_prune consumption.
 // Blank spaces return as 0, friendly pieces return as 1, enemy pieces return as -1
-std::vector<std::vector<double>> scalable_go_network_translation(const GoBoard &i_board, const bool color);
+std::vector<std::vector<double>> scalable_go_network_translation(const GoGame &i_gogame, const bool color);
 
 // Alpha Beta Pruning algorithm for Go move generation
-double scalable_go_ab_prune(NeuralNet &network, const GoBoard &i_board, const int depth, double alpha, double beta,
+double scalable_go_ab_prune(NeuralNet &network, const GoGame &i_gogame, const int depth, double alpha, double beta,
                             const bool move_color, const bool max_player, const bool player_color);
 
 
-// Class for holding a GoBoard neuralnet. Wrapper around NeuralNet
+// Class for holding a GoGame neuralnet. Wrapper around NeuralNet
 class GoBoardNeuralNet {
  private:
     // Vector holding first layer of neural nets

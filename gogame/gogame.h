@@ -1,8 +1,8 @@
 // Copyright [2016] <duncan@wduncanfraser.com>
-// Prototypes for Move Struct and GoBoard Class
+// Prototypes for GoGame and related classes
 
-#ifndef GOBOARD_GOBOARD_H_
-#define GOBOARD_GOBOARD_H_
+#ifndef GOGAME_GOGAME_H_
+#define GOGAME_GOGAME_H_
 
 #include <algorithm>
 #include <vector>
@@ -14,7 +14,7 @@
 #define TEAM_MASK 3
 #define STONE_COUNT 180
 
-// GoBoard exceptions
+// GoGame exceptions
 class GoBoardInitError : public std::runtime_error {
  public:
     GoBoardInitError() : std::runtime_error("GoBoardInitError") { }
@@ -30,8 +30,9 @@ class GoBoardBadMove : public std::runtime_error {
     GoBoardBadMove() : std::runtime_error("GoBoardBadMove") { }
 };
 
-// Struct for holding x,y coordinates
-struct XYCoordinate {
+// Class for holding x,y coordinates
+class XYCoordinate {
+ public:
     uint8_t x;
     uint8_t y;
 
@@ -95,6 +96,36 @@ inline bool check_adjacent(const XYCoordinate &i_coordinate_1, const XYCoordinat
                       adjacent_coordinates.end(), i_coordinate_2) != adjacent_coordinates.end());
 }
 
+// Struct for holding a Go Board
+class GoBoard {
+ public:
+    // Go board
+    // TODO(wdfraser): Make this private with [] operator
+    std::vector<std::vector<uint8_t>> board;
+
+    // Constructor with size specification
+    explicit GoBoard(const uint8_t board_size);
+
+    // Constructor with board passed as a vector
+    explicit GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
+
+    // Copy Constructor
+    GoBoard(const GoBoard &i_goboard);
+
+    // Comparison Operator
+    bool operator==(const GoBoard &i_goboard) const;
+
+    // Copy operator
+    GoBoard& operator= (const GoBoard &i_goboard);
+
+    // Function to get the board size
+    const uint8_t get_size() const;
+
+    // Check to make sure coordinates are within the bounds of the Go Board.
+    // Returns true if within bounds. Otherwise, false.
+    const inline bool within_bounds(const XYCoordinate &i_piece) const;
+};
+
 // Class for holding a Go string (series of adjacently connected stones of the same color).
 class GoString {
  private:
@@ -142,27 +173,23 @@ class GoString {
     const uint8_t get_size() const;
 };
 
-// Struct for holding a possible move
-struct Move {
+// Class for holding a possible move
+class GoMove {
+ public:
     // Resultant Game Board
-    std::vector<std::vector<uint8_t>> board;
+    GoBoard goboard;
 
     // Piece placed
-    uint8_t piece_x, piece_y;
+    XYCoordinate piece;
 
     // Constructor
-    Move(const std::vector<std::vector<uint8_t>> &i_board,
-         const uint8_t i_piece_x, const uint8_t i_piece_y);
+    GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece);
 
     // Comparison Operator
-    bool operator==(const Move &i_move) const;
+    bool operator==(const GoMove &i_move) const;
 
     // Copy operator
-    Move& operator= (const Move &i_move);
-
-    // Check to make sure coordinates are within the bounds of the Go Board.
-    // Returns true if within bounds. Otherwise, false.
-    const inline bool within_bounds(const uint8_t x, const uint8_t y) const;
+    GoMove& operator= (const GoMove &i_move);
 
     // Function to construct a string given an existing string
     const GoString construct_string(GoString i_string, const bool color) const;
@@ -177,16 +204,16 @@ struct Move {
     int check_move(const bool color);
 };
 
-class GoBoard {
+class GoGame {
  private:
     // Game board
-    std::vector<std::vector<uint8_t>> board;
+    GoBoard goboard;
 
-    // Move list. Cached list of possible moves from current board state.
-    std::vector<Move> move_list;
+    // GoMove list. Cached list of possible moves from current board state.
+    std::vector<GoMove> move_list;
 
-    // Move history
-    std::vector<Move> move_history;
+    // GoMove history
+    std::vector<GoMove> move_history;
 
     // Flag to determine if move_list is dirty
     bool move_list_dirty;
@@ -196,36 +223,36 @@ class GoBoard {
 
  public:
     // Constructor with size specification
-    explicit GoBoard(const uint8_t board_size);
+    explicit GoGame(const uint8_t board_size);
 
     // Constructor with board passed as a vector
-    explicit GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
+    explicit GoGame(const GoBoard &i_goboard);
 
     // Copy Constructor
-    GoBoard(const GoBoard &i_goboard);
+    GoGame(const GoGame &i_gogame);
 
     // Comparison Operator
-    bool operator==(const GoBoard &i_board) const;
-
-    // Destructor
-    virtual ~GoBoard();
+    bool operator==(const GoGame &i_gogame) const;
 
     // Function to get the board size
     const uint8_t get_size() const;
 
     // Function to get current board state
-    const std::vector<std::vector<uint8_t>> get_board() const;
+    const GoBoard get_board() const;
+
+    // Function to set the board. Overrides all checks and should only be used for testing
+    void set_board(const GoBoard &i_goboard);
 
     // Function to get the move list
-    const std::vector<Move> get_move_list() const;
+    const std::vector<GoMove> get_move_list() const;
 
     // Check to make sure coordinates are within the bounds of the Go Board.
     // Returns true if within bounds. Otherwise, false.
-    const inline bool within_bounds(const uint8_t x, const uint8_t y) const;
+    const inline bool within_bounds(const XYCoordinate &i_coord) const;
 
     // Checks if moves has been made before
     // Returns true if board state has previously existed.
-    const bool check_move_history(const Move &i_move) const;
+    const bool check_move_history(const GoMove &i_move) const;
 
     // Generate all possible moves for specified color.
     // black = 0, white = 1
@@ -234,8 +261,12 @@ class GoBoard {
 
     // Makes a move
     // Throws GoBoardBadMove exception if move is not valid
-    void make_move(const Move &i_move);
+    void make_move(const GoMove &i_move);
+
+    // Calculates current scores. First value is specified color score. Second is opponent.
+    // black = 0, white = 1
+    const std::array<uint8_t, 2> calculate_scores(const bool color) const;
 };
 
 
-#endif  // GOBOARD_GOBOARD_H_
+#endif  // GOGAME_GOGAME_H_

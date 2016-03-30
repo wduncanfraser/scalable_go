@@ -8,7 +8,8 @@ CS Masters Thesis. Scaling evolutionary neural networks for Go artificial intell
 TBD
 
 ## Structure
-+   goboard/: Library for defining Go gameboard and move generation
++   ab_prune/: Library defining AB Pruning algorithm and helper functions. Additionally, defines NeuralNet wrapper for Go.
++   gogame/: Library for defining Go game, board, and move generation
 +   neuralnet/: Neural Network Library
 +   tests/: Units and regression tests
 +   benchmark_neuralnet.cpp: Basic benchmark of neural network performance.

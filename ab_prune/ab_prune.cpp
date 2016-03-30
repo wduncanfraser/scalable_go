@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "ab_prune.h"
-#include "goboard.h"
+#include "gogame.h"
 
 std::vector<uint8_t> get_board_segments(const uint8_t board_size) {
     // Validate appropriate board size was passed.
@@ -32,13 +32,13 @@ std::vector<uint8_t> get_board_segments(const uint8_t board_size) {
     }
 }
 
-std::vector<std::vector<double>> scalable_go_network_translation(const GoBoard &i_board, const bool color) {
+std::vector<std::vector<double>> scalable_go_network_translation(const GoGame &i_gogame, const bool color) {
     // Get board size
-    uint8_t board_size = i_board.get_size();
+    uint8_t board_size = i_gogame.get_size();
     // Get the board segments
     std::vector<uint8_t> board_segments = get_board_segments(board_size);
     // Get the board
-    std::vector<std::vector<uint8_t>> board = i_board.get_board();
+    GoBoard goboard = i_gogame.get_board();
 
     // Create vector for holding segments.
     std::vector<std::vector<double>> output;
@@ -67,7 +67,7 @@ std::vector<std::vector<double>> scalable_go_network_translation(const GoBoard &
                         // Temporary variable to hold segment value, default to 0 (no piece)
                         double segment_value = 0;
                         // Temporary variable to hold mask calculation.
-                        uint8_t mask_value = board[y_start + y][x_start + x] & uint8_t(TEAM_MASK);
+                        uint8_t mask_value = goboard.board[y_start + y][x_start + x] & uint8_t(TEAM_MASK);
 
                         // If friendly, set value to 1. Else if enemy, set to -1.
                         if (mask_value == friendly_mask) {
@@ -91,24 +91,24 @@ std::vector<std::vector<double>> scalable_go_network_translation(const GoBoard &
     return output;
 }
 
-double scalable_go_ab_prune(GoBoardNeuralNet &network, GoBoard &i_board, const int depth, double alpha, double beta,
+double scalable_go_ab_prune(GoBoardNeuralNet &network, GoGame &i_gogame, const int depth, double alpha, double beta,
                             const bool move_color, const bool max_player, const bool player_color) {
     // Generate moves and retrieve the move list
-    i_board.generate_moves(move_color);
-    std::vector<Move> current_move_list = i_board.get_move_list();
+    i_gogame.generate_moves(move_color);
+    std::vector<GoMove> current_move_list = i_gogame.get_move_list();
 
     // If this is the depth limit, or a leaf, calculate and return
     if ((depth <= 0) || (current_move_list.size() <=0 )) {
-        std::vector<std::vector<double>> network_translation = scalable_go_network_translation(i_board, player_color);
+        std::vector<std::vector<double>> network_translation = scalable_go_network_translation(i_gogame, player_color);
 
         network.feed_forward(network_translation);
         return network.get_output();
     }
 
     if (max_player) {
-        for (Move &element : current_move_list) {
+        for (GoMove &element : current_move_list) {
             // Duplicate the existing board and make the move
-            GoBoard temp_board(i_board);
+            GoGame temp_board(i_gogame);
             temp_board.make_move(element);
             alpha = std::max(alpha, scalable_go_ab_prune(network, temp_board, depth-1, alpha, beta, !move_color,
                                                     false, player_color));
@@ -118,9 +118,9 @@ double scalable_go_ab_prune(GoBoardNeuralNet &network, GoBoard &i_board, const i
         }
         return alpha;
     } else {
-        for (Move &element : current_move_list) {
+        for (GoMove &element : current_move_list) {
             // Duplicate the existing board and make the move
-            GoBoard temp_board(i_board);
+            GoGame temp_board(i_gogame);
             temp_board.make_move(element);
             beta = std::min(beta, scalable_go_ab_prune(network, temp_board, depth-1, alpha, beta, !move_color,
                                                   true, player_color));

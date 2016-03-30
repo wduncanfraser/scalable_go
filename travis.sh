@@ -10,5 +10,5 @@ make
 
 # Run Tests
 ./neuralnet_tests
-./goboard_tests
+./gogame_tests
 ./ab_prune_tests

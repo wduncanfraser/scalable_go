@@ -20,13 +20,13 @@ add_executable(basic_moveset ${MOVESET_EXAMPLE})
 
 add_executable(scalable_go_training ${TRAINING})
 
-include_directories(goboard neuralnet ab_prune)
+include_directories(gogame neuralnet ab_prune)
 
-add_subdirectory(goboard)
+add_subdirectory(gogame)
 add_subdirectory(neuralnet)
 add_subdirectory(ab_prune)
 add_subdirectory(tests)
 
 target_link_libraries(benchmark_neuralnet neuralnet)
-target_link_libraries(basic_moveset goboard)
+target_link_libraries(basic_moveset gogame)
 target_link_libraries(scalable_go_training ab_prune)

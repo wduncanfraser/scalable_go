@@ -8,4 +8,4 @@ add_executable(ab_prune_tests
 target_link_libraries(ab_prune_tests gtest gtest_main)
 target_link_libraries(ab_prune_tests ab_prune)
 target_link_libraries(ab_prune_tests neuralnet)
-target_link_libraries(ab_prune_tests goboard)
+target_link_libraries(ab_prune_tests gogame)
