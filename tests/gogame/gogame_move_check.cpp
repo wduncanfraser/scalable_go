@@ -114,4 +114,26 @@ TEST(gogame_move_check, repeate_moves_throw) {
     EXPECT_THROW(test_game.make_move(test_move3), GoBoardBadMove);
 }
 
+TEST(gogame_move_check, simple_game_1) {
+    std::vector<XYCoordinate> move_list { {0, 1}, {0, 0}, {1 ,1}, {1, 0}, {2, 1}, {0, 2}, {2, 0}, {1, 2}, {2, 2} };
+    bool current_color = 0;
+
+    uint8_t board_size = 3;
+    GoGame test(board_size);
+
+    for (const XYCoordinate &element : move_list) {
+        GoMove temp_move(test.get_board(), element);
+        temp_move.check_move(current_color);
+        test.make_move(temp_move);
+        current_color = !current_color;
+    }
+
+    GoBoard expected(board_size);
+    expected.board = { {0, 0, get_mask(0)},
+                       {get_mask(0), get_mask(0), get_mask(0)},
+                       {0, 0, get_mask(0)}};
+
+    EXPECT_EQ(expected, test.get_board());
+}
+
 // TODO(wdfraser): Need a lot more unit testing on move generation

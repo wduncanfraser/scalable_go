@@ -91,12 +91,14 @@ GoString::GoString(uint8_t i_board_size) {
         throw GoBoardInitError();
     }
     board_size = i_board_size;
+    territory_border = 0;
 }
 
 GoString::~GoString() { }
 
 bool GoString::operator==(const GoString &i_string) const {
-    return (members == i_string.members) && (liberty == i_string.liberty) && (board_size == i_string.board_size);
+    return (members == i_string.members) && (liberty == i_string.liberty) &&
+            (board_size == i_string.board_size) && (territory_border == i_string.territory_border);
 }
 
 GoString& GoString::operator=(const GoString &i_string) {
@@ -105,6 +107,7 @@ GoString& GoString::operator=(const GoString &i_string) {
         members = i_string.members;
         liberty = i_string.liberty;
         board_size = i_string.board_size;
+        territory_border = i_string.territory_border;
     }
     return *this;
 }
@@ -208,7 +211,19 @@ const uint8_t GoString::get_size() const {
     return board_size;
 }
 
-GoMove::GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece) : goboard(i_goboard) {
+void GoString::set_border(uint8_t color) {
+    if ((color == BLACK_MASK) || (color == WHITE_MASK) || (color == 0)) {
+        territory_border = color;
+    } else {
+        throw GoBoardBadMask();
+    }
+}
+
+const uint8_t GoString::get_border() const {
+    return territory_border;
+}
+
+GoMove::GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece) : goboard(i_goboard), prisoners_captured(0) {
     // Check that move is within bounds
     if (!goboard.within_bounds(i_piece)) {
         throw GoBoardInitError();
@@ -217,7 +232,7 @@ GoMove::GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece) : goboard(
 }
 
 bool GoMove::operator==(const GoMove &i_move) const {
-    return (goboard == i_move.goboard) && (piece == i_move.piece);
+    return (goboard == i_move.goboard) && (piece == i_move.piece) && (prisoners_captured == i_move.prisoners_captured);
 }
 
 GoMove& GoMove::operator=(const GoMove &i_move) {
@@ -225,6 +240,7 @@ GoMove& GoMove::operator=(const GoMove &i_move) {
         // Copy variables
         goboard = i_move.goboard;
         piece = i_move.piece;
+        prisoners_captured = i_move.prisoners_captured;
     }
     return *this;
 }
@@ -324,6 +340,9 @@ int GoMove::check_move(const bool color) {
             if (!this->remove_string(temp_string, !color)) {
                 // If we failed to remove the string we just built... something is very very wrong
                 throw GoBoardUnknownError();
+            } else {
+                // If remove was succesful, append size of removed string to captured prisoners
+                prisoners_captured += temp_string.get_member_count();
             }
         }
     }
@@ -343,23 +362,39 @@ int GoMove::check_move(const bool color) {
     return static_cast<int>(move_string.get_liberty_count());
 }
 
+const GoBoard GoMove::get_board() const {
+    return goboard;
+}
+
+const XYCoordinate GoMove::get_piece() const {
+    return piece;
+}
+
+const uint8_t GoMove::get_prisoners_captured() const {
+    return prisoners_captured;
+}
+
 GoGame::GoGame(const uint8_t board_size) : goboard(board_size) {
     // Set flags
     move_list_dirty = true;
+    prisoner_count.fill(0);
 }
 
 GoGame::GoGame(const GoBoard &i_goboard) : goboard(i_goboard) {
     // Set flags
     move_list_dirty = true;
+    prisoner_count.fill(0);
 }
 
 GoGame::GoGame(const GoGame &i_gogame) : goboard(i_gogame.goboard), move_list(i_gogame.move_list),
                                              move_history(i_gogame.move_history),
                                              move_list_dirty(i_gogame.move_list_dirty),
-                                             move_list_color(i_gogame.move_list_color) { }
+                                             move_list_color(i_gogame.move_list_color),
+                                             prisoner_count(i_gogame.prisoner_count) { }
 
 bool GoGame::operator==(const GoGame &i_gogame) const {
-    return (goboard == i_gogame.goboard) && (move_history == i_gogame.move_history);
+    return (goboard == i_gogame.goboard) && (move_history == i_gogame.move_history) &&
+            (prisoner_count == i_gogame.prisoner_count);
 }
 
 const uint8_t GoGame::get_size() const {
@@ -381,10 +416,6 @@ void GoGame::set_board(const GoBoard &i_goboard) {
 
 const std::vector<GoMove> GoGame::get_move_list() const {
     return move_list;
-}
-
-const inline bool GoGame::within_bounds(const XYCoordinate &i_coord) const {
-    return goboard.within_bounds(i_coord);
 }
 
 const bool GoGame::check_move_history(const GoMove &i_move) const {
@@ -462,6 +493,9 @@ void GoGame::make_move(const GoMove &i_move) {
         move_history.push_back(i_move);
         goboard = i_move.goboard;
 
+        // Add prisoners from move
+        prisoner_count[move_color] += i_move.get_prisoners_captured();
+
         // Set move_list to dirty
         move_list_dirty = true;
     } else {
@@ -470,3 +504,119 @@ void GoGame::make_move(const GoMove &i_move) {
     }
 }
 
+const GoString GoGame::construct_territory_string(GoString i_string) const {
+    // take the passed string, and determine all the elements and liberty
+    // Setup list of coordinates to check, starting with passed members
+    std::vector<XYCoordinate> coordinates_check = i_string.get_members();
+
+    // Setup uint8_t to determine if the border has been found, and if so, what color was the first border piece
+    // 0 = no
+    // BLACK_MASK = black
+    // WHITE_MASK = white
+    uint8_t first_border = 0;
+    // Setup bool to store if string is bordered by both colors
+    bool neutral_territory = false;
+
+
+    while (coordinates_check.size() != 0) {
+        // TODO(wdfraser): Make this faster
+        // Check adjacency for the first element
+        std::vector<XYCoordinate> adjacent_coordinates =
+                get_adjacent(coordinates_check.front(), uint8_t(goboard.get_size()));
+        for (XYCoordinate &element : adjacent_coordinates) {
+            if (goboard.board[element.y][element.x] == 0) {
+                // If blank, attempt to append to members.
+                // If successful appending to members, add to check list
+                if (i_string.append_member(element)) {
+                    coordinates_check.push_back(element);
+                }
+            } else {
+                // Else if a piece, check color and check if it effects ownership of territory.
+                // First check if we have already determined the string is neutral.
+                // If it is, continue on as we don't care any more.
+                if (!neutral_territory) {
+                    // Check if border has already been found
+                    if (first_border == 0) {
+                        // If not, set border found and first_border to current piece color
+                        first_border = goboard.board[element.y][element.x];
+                    } else {
+                        // If border has already been found, check if piece matches color
+                        if (first_border == goboard.board[element.y][element.x]) {
+                            continue;
+                        } else {
+                            // If it doesn't, we have a neutral territory.
+                            neutral_territory = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Done checking, remove first element from check list
+        coordinates_check.erase(coordinates_check.begin());
+    }
+
+    if (neutral_territory) {
+        i_string.set_border(0);
+    } else {
+        i_string.set_border(first_border);
+    }
+    return i_string;
+}
+
+const std::array<uint8_t, 2> GoGame::calculate_scores(const bool color) const {
+    // Get the board size
+    uint8_t board_size = this->get_size();
+    // Get a copy of the board for manipulation.
+    GoBoard scoring_board(goboard);
+    // Create array for storing scores.
+    std::array<uint8_t, 2> scores{ {0, 0} };
+
+
+    // Loop through all board positions. On any empty space, see if it is part of a string that has already been scored.
+    // If not, generate the string and check if it is bordered by only 1 color.
+    for (uint8_t y = 0; y < board_size; y++) {
+        for (uint8_t x = 0; x < board_size; x++) {
+            // First, check if piece has already been scored, or contains a piece
+            if ((scoring_board.board[y][x] & SCORED_MASK) || (scoring_board.board[y][x] & PIECE_MASK)) {
+                continue;
+            }
+            // If we reached here, then the space should be an unscored blank
+            // Generate a string
+            GoString territory_string(uint8_t(goboard.get_size()));
+
+            // Append the piece to the String
+            territory_string.append_member(XYCoordinate(x, y));
+
+            // Complete the string
+            territory_string = this->construct_territory_string(territory_string);
+
+            // Check if the string is owned.
+            if (territory_string.get_border() == get_mask(color)) {
+                // If owned by color, append score to scores[0].
+                scores[0] += territory_string.get_member_count();
+            } else if (territory_string.get_border() == get_mask(!color)) {
+                // If owned by opponent, append score to scores[1].
+                scores[1] += territory_string.get_member_count();
+            }
+
+            // Mark string members as scored.
+            for (const XYCoordinate &element : territory_string.get_members()) {
+                scoring_board.board[element.y][element.x] = SCORED_MASK;
+            }
+        }
+    }
+
+    // All territories have been calculated. Append prisoners.
+    if (color) {
+        // If color is white, append white pieces to player score and black to opponent
+        scores[0] += prisoner_count[1];
+        scores[1] += prisoner_count[0];
+    } else {
+        scores[0] += prisoner_count[0];
+        scores[1] += prisoner_count[1];
+    }
+
+    // Return final scores
+    return scores;
+}
