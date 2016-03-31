@@ -212,7 +212,7 @@ const uint8_t GoString::get_size() const {
 }
 
 void GoString::set_border(uint8_t color) {
-    if ((color == BLACK_MASK) || (color == WHITE_MASK) || (color == 0)) {
+    if ((color == get_mask(0)) || (color == get_mask(1)) || (color == 0)) {
         territory_border = color;
     } else {
         throw GoBoardBadMask();
