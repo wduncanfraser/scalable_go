@@ -272,6 +272,9 @@ class GoGame {
     // prisoner_count[1] = white
     std::array<uint8_t, 2> prisoner_count;
 
+    // Array to hold pieces placed count
+    std::array<uint8_t, 2> pieces_placed;
+
  public:
     // Constructor with size specification
     explicit GoGame(const uint8_t board_size);
@@ -299,6 +302,9 @@ class GoGame {
 
     // Function to get the prisoner counts
     const std::array<uint8_t, 2> get_prisoner_count() const;
+
+    // Function to get the pieces placed count
+    const std::array<uint8_t, 2> get_pieces_placed() const;
 
     // Checks if move has been made before
     // Returns true if board state has previously existed.

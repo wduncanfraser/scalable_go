@@ -1,5 +1,5 @@
 // Copyright [2016] <duncan@wduncanfraser.com>
-// Implementation of GoMove Struct and GoGame class
+// Implementation of GoGame and related classes
 
 #include <algorithm>
 #include <vector>
@@ -378,23 +378,26 @@ GoGame::GoGame(const uint8_t board_size) : goboard(board_size) {
     // Set flags
     move_list_dirty = true;
     prisoner_count.fill(0);
+    pieces_placed.fill(0);
 }
 
 GoGame::GoGame(const GoBoard &i_goboard) : goboard(i_goboard) {
     // Set flags
     move_list_dirty = true;
     prisoner_count.fill(0);
+    pieces_placed.fill(0);
 }
 
 GoGame::GoGame(const GoGame &i_gogame) : goboard(i_gogame.goboard), move_list(i_gogame.move_list),
                                              move_history(i_gogame.move_history),
                                              move_list_dirty(i_gogame.move_list_dirty),
                                              move_list_color(i_gogame.move_list_color),
-                                             prisoner_count(i_gogame.prisoner_count) { }
+                                             prisoner_count(i_gogame.prisoner_count),
+                                             pieces_placed(i_gogame.pieces_placed) { }
 
 bool GoGame::operator==(const GoGame &i_gogame) const {
     return (goboard == i_gogame.goboard) && (move_history == i_gogame.move_history) &&
-            (prisoner_count == i_gogame.prisoner_count);
+            (prisoner_count == i_gogame.prisoner_count) && (pieces_placed == i_gogame.pieces_placed);
 }
 
 const uint8_t GoGame::get_size() const {
@@ -420,6 +423,10 @@ const std::vector<GoMove> GoGame::get_move_list() const {
 
 const std::array<uint8_t, 2> GoGame::get_prisoner_count() const {
     return prisoner_count;
+}
+
+const std::array<uint8_t, 2> GoGame::get_pieces_placed() const {
+    return pieces_placed;
 }
 
 const bool GoGame::check_move_history(const GoMove &i_move) const {
@@ -499,6 +506,9 @@ void GoGame::make_move(const GoMove &i_move) {
 
         // Add prisoners from move
         prisoner_count[move_color] += i_move.get_prisoners_captured();
+
+        // Add count to pieces placed;
+        pieces_placed[move_color] += 1;
 
         // Set move_list to dirty
         move_list_dirty = true;

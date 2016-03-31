@@ -75,7 +75,9 @@ TEST(gogame_score_check, simple_game_1) {
     std::cout << std::endl;
     render_board(test.get_board());
     std::cout << "Black Prisoners: " << int(test.get_prisoner_count()[0]) <<
-    " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+            " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+    std::cout << "Black Pieces Placed: " << int(test.get_pieces_placed()[0]) <<
+            " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {8, 0} };
     EXPECT_EQ(expected, test.calculate_scores());
@@ -107,6 +109,8 @@ TEST(gogame_score_check, simple_game_2_52_moves) {
     render_board(test.get_board());
     std::cout << "Black Prisoners: " << int(test.get_prisoner_count()[0]) <<
             " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+    std::cout << "Black Pieces Placed: " << int(test.get_pieces_placed()[0]) <<
+            " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {13, 20} };
     EXPECT_EQ(expected, test.calculate_scores());
@@ -139,6 +143,9 @@ TEST(gogame_score_check, simple_game_2_54_moves) {
     render_board(test.get_board());
     std::cout << "Black Prisoners: " << int(test.get_prisoner_count()[0]) <<
             " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+
+    std::cout << "Black Pieces Placed: " << int(test.get_pieces_placed()[0]) <<
+            " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {24, 19} };
     EXPECT_EQ(expected, test.calculate_scores());
