@@ -28,7 +28,7 @@ int main() {
     for (const GoMove &element : test.get_move_list()) {
         std::cout << "Possible move: \n";
 
-        render_board(element.goboard);
+        render_board(element.get_board());
     }
 
     GoBoard test2_input(board_size);
@@ -45,7 +45,7 @@ int main() {
     for (const GoMove &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
 
-        render_board(element.goboard);
+        render_board(element.get_board());
     }
 
     test2.generate_moves(1);
@@ -57,7 +57,7 @@ int main() {
     for (const GoMove &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
 
-        render_board(element.goboard);
+        render_board(element.get_board());
     }
 
     test2.make_move(test2.get_move_list()[0]);
@@ -72,6 +72,6 @@ int main() {
     for (const GoMove &element : test2.get_move_list()) {
         std::cout << "Possible move: \n";
 
-        render_board(element.goboard);
+        render_board(element.get_board());
     }
 }
