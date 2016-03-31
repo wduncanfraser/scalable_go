@@ -316,12 +316,11 @@ class GoGame {
     // Construct a territory string
     const GoString construct_territory_string(GoString i_string) const;
 
-    // Calculates current scores. First value is specified color score. Second is opponent.
+    // Calculates current scores. First value is black score. Second is white.
     // Using territory scoring with no seki.
     // Territory is calculated as a string of empty spaces surrounded by only a single color.
     // Prisoner count is added to territory score.
-    // black = 0, white = 1
-    const std::array<uint8_t, 2> calculate_scores(const bool color) const;
+    const std::array<uint8_t, 2> calculate_scores() const;
 };
 
 

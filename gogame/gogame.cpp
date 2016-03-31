@@ -568,7 +568,7 @@ const GoString GoGame::construct_territory_string(GoString i_string) const {
     return i_string;
 }
 
-const std::array<uint8_t, 2> GoGame::calculate_scores(const bool color) const {
+const std::array<uint8_t, 2> GoGame::calculate_scores() const {
     // Get the board size
     uint8_t board_size = this->get_size();
     // Get a copy of the board for manipulation.
@@ -596,11 +596,11 @@ const std::array<uint8_t, 2> GoGame::calculate_scores(const bool color) const {
             territory_string = this->construct_territory_string(territory_string);
 
             // Check if the string is owned.
-            if (territory_string.get_border() == get_mask(color)) {
-                // If owned by color, append score to scores[0].
+            if (territory_string.get_border() == get_mask(0)) {
+                // If owned by black, append score to scores[0].
                 scores[0] += territory_string.get_member_count();
-            } else if (territory_string.get_border() == get_mask(!color)) {
-                // If owned by opponent, append score to scores[1].
+            } else if (territory_string.get_border() == get_mask(1)) {
+                // If owned by white, append score to scores[1].
                 scores[1] += territory_string.get_member_count();
             }
 
@@ -612,14 +612,8 @@ const std::array<uint8_t, 2> GoGame::calculate_scores(const bool color) const {
     }
 
     // All territories have been calculated. Append prisoners.
-    if (color) {
-        // If color is white, append white pieces to player score and black to opponent
-        scores[0] += prisoner_count[1];
-        scores[1] += prisoner_count[0];
-    } else {
-        scores[0] += prisoner_count[0];
-        scores[1] += prisoner_count[1];
-    }
+    scores[0] += prisoner_count[0];
+    scores[1] += prisoner_count[1];
 
     // Return final scores
     return scores;

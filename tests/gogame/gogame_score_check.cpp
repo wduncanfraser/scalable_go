@@ -9,22 +9,13 @@
 #include "gohelpers.h"
 
 
-TEST(gogame_score_check, blank_board_black) {
+TEST(gogame_score_check, blank_board) {
     uint8_t board_size = 3;
     GoGame test(board_size);
 
     std::array<uint8_t, 2> expected { {0, 0} };
 
-    EXPECT_EQ(expected, test.calculate_scores(get_mask(0)));
-}
-
-TEST(gogame_score_check, blank_board_white) {
-    uint8_t board_size = 3;
-    GoGame test(board_size);
-
-    std::array<uint8_t, 2> expected { {0, 0} };
-
-    EXPECT_EQ(expected, test.calculate_scores(get_mask(1)));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
 TEST(gogame_score_check, single_piece_black) {
@@ -37,20 +28,7 @@ TEST(gogame_score_check, single_piece_black) {
 
     std::array<uint8_t, 2> expected { {8, 0} };
 
-    EXPECT_EQ(expected, test.calculate_scores(0));
-}
-
-TEST(gogame_score_check, single_piece_black_white_score) {
-    uint8_t board_size = 3;
-    GoBoard test_board(board_size);
-
-    test_board.board[1][1] = get_mask(0);
-
-    GoGame test(test_board);
-
-    std::array<uint8_t, 2> expected { {0, 8} };
-
-    EXPECT_EQ(expected, test.calculate_scores(1));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
 TEST(gogame_score_check, single_piece_white) {
@@ -61,25 +39,12 @@ TEST(gogame_score_check, single_piece_white) {
 
     GoGame test(test_board);
 
-    std::array<uint8_t, 2> expected { {8, 0} };
-
-    EXPECT_EQ(expected, test.calculate_scores(1));
-}
-
-TEST(gogame_score_check, single_piece_white_black_score) {
-    uint8_t board_size = 3;
-    GoBoard test_board(board_size);
-
-    test_board.board[1][1] = get_mask(1);
-
-    GoGame test(test_board);
-
     std::array<uint8_t, 2> expected { {0, 8} };
 
-    EXPECT_EQ(expected, test.calculate_scores(0));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
-TEST(gogame_score_check, simple_split_board_black) {
+TEST(gogame_score_check, simple_split_board) {
     uint8_t board_size = 3;
     GoBoard test_board(board_size);
 
@@ -90,21 +55,7 @@ TEST(gogame_score_check, simple_split_board_black) {
 
     std::array<uint8_t, 2> expected { {3, 0} };
 
-    EXPECT_EQ(expected, test.calculate_scores(0));
-}
-
-TEST(gogame_score_check, simple_split_board_white) {
-    uint8_t board_size = 3;
-    GoBoard test_board(board_size);
-
-    test_board.board[0] = {get_mask(1), get_mask(1), 0};
-    test_board.board[1] = {get_mask(0), get_mask(0), get_mask(0)};
-
-    GoGame test(test_board);
-
-    std::array<uint8_t, 2> expected { {0, 3} };
-
-    EXPECT_EQ(expected, test.calculate_scores(1));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
 TEST(gogame_score_check, simple_game_1) {
@@ -121,8 +72,13 @@ TEST(gogame_score_check, simple_game_1) {
         current_color = !current_color;
     }
 
+    std::cout << std::endl;
+    render_board(test.get_board());
+    std::cout << "Black Prisoners: " << int(test.get_prisoner_count()[0]) <<
+    " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+
     std::array<uint8_t, 2> expected { {8, 0} };
-    EXPECT_EQ(expected, test.calculate_scores(0));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
 TEST(gogame_score_check, simple_game_2_52_moves) {
@@ -153,7 +109,7 @@ TEST(gogame_score_check, simple_game_2_52_moves) {
             " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {13, 20} };
-    EXPECT_EQ(expected, test.calculate_scores(0));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
 
 TEST(gogame_score_check, simple_game_2_54_moves) {
@@ -185,5 +141,5 @@ TEST(gogame_score_check, simple_game_2_54_moves) {
             " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {24, 19} };
-    EXPECT_EQ(expected, test.calculate_scores(0));
+    EXPECT_EQ(expected, test.calculate_scores());
 }
