@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 
 set(HEADER_FILES
         gogame.h
+        gohelpers.h
         )
 
 set(SOURCE_FILES

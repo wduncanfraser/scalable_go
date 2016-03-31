@@ -297,6 +297,9 @@ class GoGame {
     // Function to get the move list
     const std::vector<GoMove> get_move_list() const;
 
+    // Function to get the prisoner counts
+    const std::array<uint8_t, 2> get_prisoner_count() const;
+
     // Checks if move has been made before
     // Returns true if board state has previously existed.
     const bool check_move_history(const GoMove &i_move) const;
