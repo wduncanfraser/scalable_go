@@ -109,7 +109,7 @@ double scalable_go_ab_prune(GoBoardNeuralNet &network, GoGame &i_gogame, const i
         for (GoMove &element : current_move_list) {
             // Duplicate the existing board and make the move
             GoGame temp_board(i_gogame);
-            temp_board.make_move(element);
+            temp_board.make_move(element, move_color);
             alpha = std::max(alpha, scalable_go_ab_prune(network, temp_board, depth-1, alpha, beta, !move_color,
                                                     false, player_color));
             if (beta <= alpha) {
@@ -121,7 +121,7 @@ double scalable_go_ab_prune(GoBoardNeuralNet &network, GoGame &i_gogame, const i
         for (GoMove &element : current_move_list) {
             // Duplicate the existing board and make the move
             GoGame temp_board(i_gogame);
-            temp_board.make_move(element);
+            temp_board.make_move(element, move_color);
             beta = std::min(beta, scalable_go_ab_prune(network, temp_board, depth-1, alpha, beta, !move_color,
                                                   true, player_color));
             if (beta <= alpha) {

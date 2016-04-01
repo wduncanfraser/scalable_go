@@ -49,7 +49,7 @@ int main() {
         render_board(element.get_board());
     }
 
-    test2.make_move(test2.get_move_list()[0]);
+    test2.make_move(test2.get_move_list()[0], 1);
     std::cout << "White: Take move 1 on 3x3 board: \n";
 
     render_board(test2.get_board());
