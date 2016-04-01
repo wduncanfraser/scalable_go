@@ -58,6 +58,20 @@ TEST(gogame_move_check, single_piece_surrounded) {
     EXPECT_EQ(0, test_move.check_move(0));
 }
 
+TEST(gogame_move_check, blank_board_passes) {
+    uint8_t board_size = 3;
+    GoGame test(board_size);
+
+    GoMove pass_move(test.get_board());
+
+    test.make_move(pass_move, 0);
+    test.make_move(pass_move, 1);
+
+    GoBoard expected_board(board_size);
+
+    EXPECT_EQ(expected_board, test.get_board());
+}
+
 TEST(gogame_move_check, repeate_moves_history) {
     uint8_t board_size = 5;
     GoBoard test_board(board_size);
@@ -71,12 +85,12 @@ TEST(gogame_move_check, repeate_moves_history) {
     // Make first move
     GoMove test_move1(test_game.get_board(), XYCoordinate(0, 2));
     test_move1.check_move(0);
-    test_game.make_move(test_move1);
+    test_game.make_move(test_move1, 0);
 
     // Make capture
     GoMove test_move2(test_game.get_board(), XYCoordinate(2, 1));
     test_move2.check_move(1);
-    test_game.make_move(test_move2);
+    test_game.make_move(test_move2, 1);
 
     // Attempt to make second capture which would reset board to a prior state
     GoMove test_move3(test_game.get_board(), XYCoordinate(2, 2));
@@ -99,19 +113,19 @@ TEST(gogame_move_check, repeate_moves_throw) {
     // Make first move
     GoMove test_move1(test_game.get_board(), XYCoordinate(0, 2));
     test_move1.check_move(0);
-    test_game.make_move(test_move1);
+    test_game.make_move(test_move1, 0);
 
     // Make capture
     GoMove test_move2(test_game.get_board(), XYCoordinate(2, 1));
     test_move2.check_move(1);
-    test_game.make_move(test_move2);
+    test_game.make_move(test_move2, 1);
 
     // Attempt to make second capture which would reset board to a prior state
     GoMove test_move3(test_game.get_board(), XYCoordinate(2, 2));
     test_move3.check_move(0);
 
     // Check move is in move history
-    EXPECT_THROW(test_game.make_move(test_move3), GoBoardBadMove);
+    EXPECT_THROW(test_game.make_move(test_move3, 0), GoBoardBadMove);
 }
 
 TEST(gogame_move_check, simple_game_1) {
@@ -124,7 +138,7 @@ TEST(gogame_move_check, simple_game_1) {
     for (const XYCoordinate &element : move_list) {
         GoMove temp_move(test.get_board(), element);
         temp_move.check_move(current_color);
-        test.make_move(temp_move);
+        test.make_move(temp_move, current_color);
         current_color = !current_color;
     }
 

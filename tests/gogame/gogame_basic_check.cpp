@@ -78,7 +78,7 @@ TEST(gogame_basic_check, game_copy_blank) {
 TEST(gogame_basic_check, first_move_generation_count) {
     GoGame test(5);
     test.generate_moves(0);
-    EXPECT_EQ(25, test.get_move_list().size());
+    EXPECT_EQ(26, test.get_move_list().size());
 }
 
 TEST(gogame_basic_check, first_move_generation) {
@@ -97,6 +97,8 @@ TEST(gogame_basic_check, first_move_generation) {
             test_move_list.push_back(GoMove(temp_board, XYCoordinate(x, y)));
         }
     }
+    // Add pass
+    test_move_list.push_back(GoMove(test.get_board()));
 
     EXPECT_EQ(test_move_list, test.get_move_list());
 }

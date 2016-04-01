@@ -223,16 +223,20 @@ const uint8_t GoString::get_border() const {
     return territory_border;
 }
 
-GoMove::GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece) : goboard(i_goboard), prisoners_captured(0) {
+GoMove::GoMove(const GoBoard &i_goboard) : goboard(i_goboard), piece(XYCoordinate(0, 0)),
+                                           prisoners_captured(0), pass(true) { }
+
+GoMove::GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece) : goboard(i_goboard), piece(i_piece),
+                                                                        prisoners_captured(0), pass(false) {
     // Check that move is within bounds
     if (!goboard.within_bounds(i_piece)) {
         throw GoBoardInitError();
     }
-    piece = i_piece;
 }
 
 bool GoMove::operator==(const GoMove &i_move) const {
-    return (goboard == i_move.goboard) && (piece == i_move.piece) && (prisoners_captured == i_move.prisoners_captured);
+    return (goboard == i_move.goboard) && (piece == i_move.piece) &&
+            (prisoners_captured == i_move.prisoners_captured) && (pass == i_move.pass);
 }
 
 GoMove& GoMove::operator=(const GoMove &i_move) {
@@ -241,6 +245,7 @@ GoMove& GoMove::operator=(const GoMove &i_move) {
         goboard = i_move.goboard;
         piece = i_move.piece;
         prisoners_captured = i_move.prisoners_captured;
+        pass = i_move.pass;
     }
     return *this;
 }
@@ -294,6 +299,10 @@ bool GoMove::remove_string(const GoString &i_string, const bool color) {
 }
 
 int GoMove::check_move(const bool color) {
+    // Check if this is a pass move. If it is, return 0.
+    if (pass) {
+        return 0;
+    }
     // Check if the calculation has already been made (piece placed), as that is the most basic end case
     if (goboard.board[piece.y][piece.x] != 0) {
         return -1;
@@ -372,6 +381,10 @@ const XYCoordinate GoMove::get_piece() const {
 
 const uint8_t GoMove::get_prisoners_captured() const {
     return prisoners_captured;
+}
+
+const bool GoMove::check_pass() const {
+    return pass;
 }
 
 GoGame::GoGame(const uint8_t board_size) : goboard(board_size) {
@@ -473,6 +486,10 @@ bool GoGame::generate_moves(const bool color) {
             }
         }
 
+        // Append a pass as a valid move
+        GoMove pass_move(goboard);
+        move_list.push_back(pass_move);
+
         // Set move_list flags
         move_list_dirty = false;
         move_list_color = color;
@@ -482,21 +499,22 @@ bool GoGame::generate_moves(const bool color) {
     return move_list.size() != 0;
 }
 
-void GoGame::make_move(const GoMove &i_move) {
+void GoGame::make_move(const GoMove &i_move, const bool color) {
     // Not validating size as that is handled implicitly by comparing against the move list
-    // Set bool for move color
-    bool move_color;
-    // Get the move color
-    if (i_move.goboard.board[i_move.piece.y][i_move.piece.x] == get_mask(0)) {
-        move_color = 0;
-    } else if (i_move.goboard.board[i_move.piece.y][i_move.piece.x] == get_mask(1)) {
-        move_color = 1;
-    } else {
-        throw GoBoardBadMove();
+    // Check if move is a pass. If it is, handle and exit.
+    if (i_move.check_pass()) {
+        move_history.push_back(i_move);
+        // No change in board. Add prisoner to other team. And append pieces_places
+        prisoner_count[!color] += 1;
+        pieces_placed[color] += 1;
+
+        // Set move_list to dirty
+        move_list_dirty = true;
+        return;
     }
 
     // Generate moves
-    this->generate_moves(move_color);
+    this->generate_moves(color);
 
     // Check if move is in move list
     if (std::find(move_list.begin(), move_list.end(), i_move) != move_list.end()) {
@@ -505,10 +523,10 @@ void GoGame::make_move(const GoMove &i_move) {
         goboard = i_move.goboard;
 
         // Add prisoners from move
-        prisoner_count[move_color] += i_move.get_prisoners_captured();
+        prisoner_count[color] += i_move.get_prisoners_captured();
 
         // Add count to pieces placed;
-        pieces_placed[move_color] += 1;
+        pieces_placed[color] += 1;
 
         // Set move_list to dirty
         move_list_dirty = true;

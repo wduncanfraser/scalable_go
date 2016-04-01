@@ -44,6 +44,51 @@ TEST(gogame_score_check, single_piece_white) {
     EXPECT_EQ(expected, test.calculate_scores());
 }
 
+TEST(gogame_score_check, blank_board_pass_black) {
+    uint8_t board_size = 3;
+    GoGame test(board_size);
+
+    GoMove pass_move(test.get_board());
+
+    test.make_move(pass_move, 0);
+
+    std::array<uint8_t, 2> expected { {0, 1} };
+    std::array<uint8_t, 2> expected_pieces { {1, 0} };
+
+    EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected_pieces, test.get_pieces_placed());
+}
+
+TEST(gogame_score_check, blank_board_pass_white) {
+    uint8_t board_size = 3;
+    GoGame test(board_size);
+
+    GoMove pass_move(test.get_board());
+
+    test.make_move(pass_move, 1);
+
+    std::array<uint8_t, 2> expected { {1, 0} };
+    std::array<uint8_t, 2> expected_pieces { {0, 1} };
+
+    EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected_pieces, test.get_pieces_placed());
+}
+
+TEST(gogame_score_check, blank_board_passes) {
+    uint8_t board_size = 3;
+    GoGame test(board_size);
+
+    GoMove pass_move(test.get_board());
+
+    test.make_move(pass_move, 0);
+    test.make_move(pass_move, 1);
+
+    std::array<uint8_t, 2> expected { {1, 1} };
+
+    EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected, test.get_pieces_placed());
+}
+
 TEST(gogame_score_check, simple_split_board) {
     uint8_t board_size = 3;
     GoBoard test_board(board_size);
@@ -68,7 +113,7 @@ TEST(gogame_score_check, simple_game_1) {
     for (const XYCoordinate &element : move_list) {
         GoMove temp_move(test.get_board(), element);
         temp_move.check_move(current_color);
-        test.make_move(temp_move);
+        test.make_move(temp_move, current_color);
         current_color = !current_color;
     }
 
@@ -101,7 +146,7 @@ TEST(gogame_score_check, simple_game_2_52_moves) {
     for (const XYCoordinate &element : move_list) {
         GoMove temp_move(test.get_board(), element);
         temp_move.check_move(current_color);
-        test.make_move(temp_move);
+        test.make_move(temp_move, current_color);
         current_color = !current_color;
     }
 
@@ -113,7 +158,9 @@ TEST(gogame_score_check, simple_game_2_52_moves) {
             " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {13, 20} };
+    std::array<uint8_t, 2> expected_pieces { {26, 26} };
     EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected_pieces, test.get_pieces_placed());
 }
 
 TEST(gogame_score_check, simple_game_2_54_moves) {
@@ -135,7 +182,7 @@ TEST(gogame_score_check, simple_game_2_54_moves) {
     for (const XYCoordinate &element : move_list) {
         GoMove temp_move(test.get_board(), element);
         temp_move.check_move(current_color);
-        test.make_move(temp_move);
+        test.make_move(temp_move, current_color);
         current_color = !current_color;
     }
 
@@ -148,5 +195,51 @@ TEST(gogame_score_check, simple_game_2_54_moves) {
             " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
 
     std::array<uint8_t, 2> expected { {24, 19} };
+    std::array<uint8_t, 2> expected_pieces { {27, 27} };
     EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected_pieces, test.get_pieces_placed());
+}
+
+TEST(gogame_score_check, simple_game_2_54_moves_pass_ended) {
+    // Example game from http://www.britgo.org/intro/intro3.html
+    std::vector<XYCoordinate> move_list { {4, 4}, {2, 4}, {6, 4}, {3, 6}, {2, 3}, {1, 3}, {2, 2},
+                                          {3, 4}, {4, 3}, {1, 2}, {4, 6}, {4, 7}, {5, 6}, {3, 3}, {3, 2}, {4, 2},
+                                          {4, 1}, {5, 2}, {5, 1}, {6, 2}, {1, 1},
+                                          {7, 4}, {7, 5}, {6, 3}, {5, 4}, {0, 1},
+                                          {6, 1}, {7, 1}, {7, 0}, {7, 2}, {8, 3}, {2, 1}, {3, 1}, {1, 0}, {7, 3}, {3, 0}, {5, 3}, {4, 0}, {8, 1},
+                                          {3, 7}, {5, 7}, {5, 8}, {6, 8}, {4, 8}, {6, 7},
+                                          {4, 5}, {5, 5}, {3, 5}, {8, 2}, {5, 0},
+                                          {6, 0}, {2, 0},
+                                          {8, 4}, {0, 0} };
+    bool current_color = 0;
+
+    uint8_t board_size = 9;
+    GoGame test(board_size);
+
+    for (const XYCoordinate &element : move_list) {
+        GoMove temp_move(test.get_board(), element);
+        temp_move.check_move(current_color);
+        test.make_move(temp_move, current_color);
+        current_color = !current_color;
+    }
+
+    // Passes to end the game
+    GoMove pass_move(test.get_board());
+    // Black Pass
+    test.make_move(pass_move, 0);
+    // White Pass
+    test.make_move(pass_move, 1);
+
+    std::cout << std::endl;
+    render_board(test.get_board());
+    std::cout << "Black Prisoners: " << int(test.get_prisoner_count()[0]) <<
+    " White Prisoners: " << int(test.get_prisoner_count()[1]) << std::endl;
+
+    std::cout << "Black Pieces Placed: " << int(test.get_pieces_placed()[0]) <<
+    " White Pieces Placed: " << int(test.get_pieces_placed()[1]) << std::endl;
+
+    std::array<uint8_t, 2> expected { {25, 20} };
+    std::array<uint8_t, 2> expected_pieces { {28, 28} };
+    EXPECT_EQ(expected, test.calculate_scores());
+    EXPECT_EQ(expected_pieces, test.get_pieces_placed());
 }

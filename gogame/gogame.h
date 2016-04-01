@@ -217,8 +217,14 @@ class GoMove {
     // Count of prisoners captures
     uint8_t prisoners_captured;
 
+    // Flag to determine if the move is a pass
+    bool pass;
+
  public:
-    // Constructor
+    // Pass Constructor, takes the current board only
+    explicit GoMove(const GoBoard &i_goboard);
+
+    // Standard Constructor, takes the existing board state and the piece to be placed
     GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece);
 
     // Comparison Operator
@@ -235,7 +241,8 @@ class GoMove {
     bool remove_string(const GoString &i_string, const bool color);
 
     // Determines the impact of a move on the board (modifies board). Returns -1 if the piece has already been placed,
-    // otherwise returns the liberty of the piece/string
+    // otherwise returns the liberty of the piece/string.
+    // Pass moves return 0.
     // black = 0, white = 1
     int check_move(const bool color);
 
@@ -247,6 +254,9 @@ class GoMove {
 
     // Function to get prisoner count
     const uint8_t get_prisoners_captured() const;
+
+    // Function to check if hte move is a pass.
+    const bool check_pass() const;
 };
 
 class GoGame {
@@ -317,7 +327,7 @@ class GoGame {
 
     // Makes a move
     // Throws GoBoardBadMove exception if move is not valid
-    void make_move(const GoMove &i_move);
+    void make_move(const GoMove &i_move, const bool color);
 
     // Construct a territory string
     const GoString construct_territory_string(GoString i_string) const;
