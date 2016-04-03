@@ -181,3 +181,21 @@ void GoGameNN::feed_forward(const std::vector<std::vector<double>> &input_segmen
 const double GoGameNN::get_output() const {
     return layer2.get_output()[0];
 }
+
+void GoGameNN::export_weights_stream(std::ofstream &file) {
+    // Export all layer 1 networks 1 by 1
+    for (NeuralNet &element : layer1) {
+        element.export_weights_stream(file);
+    }
+    // Export layer 2 network
+    layer2.export_weights_stream(file);
+}
+
+void GoGameNN::import_weights_stream(std::ifstream &file) {
+    // Import all layer 1 networks 1 by 1
+    for (NeuralNet &element : layer1) {
+        element.import_weights_stream(file);
+    }
+    // Import layer 2 network
+    layer2.import_weights_stream(file);
+}

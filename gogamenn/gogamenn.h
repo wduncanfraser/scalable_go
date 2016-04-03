@@ -74,6 +74,12 @@ class GoGameNN {
 
     // Get output
     const double get_output() const;
+
+    // Export weights to specified ofstream. Wrapper around NeuralNet::expot_weights_stream
+    void export_weights_stream(std::ofstream &file);
+
+    // Import weights from specified ifstream. Wrapper around NeuralNet::import_weights_stream
+    void import_weights_stream(std::ifstream &file);
 };
 
 #endif  // GOGAMENN_GOGAMENN_H_

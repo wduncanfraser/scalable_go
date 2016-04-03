@@ -193,3 +193,44 @@ TEST(gogamenn_basic_check, gogamenn_bad_feed_forward) {
     EXPECT_THROW(test_nn.feed_forward(test_feed, test_game.get_pieces_placed()[0], test_game.get_prisoner_count()[0],
                                       test_game.get_prisoner_count()[1]), GoGameNNFeedForwardError);
 }
+TEST(gogamenn_basic_check, write_to_file) {
+    // Check that there is no data loss/roundng error in exporting the network to file
+    GoGameNN test_network1(5);
+    test_network1.initialize_random();
+
+    std::ofstream output_file("testgogamenn.txt");
+    test_network1.export_weights_stream(output_file);
+    output_file.close();
+
+    GoGameNN test_network2(5);
+    std::ifstream input_file("testgogamenn.txt");
+    test_network2.import_weights_stream(input_file);
+    input_file.close();
+
+    EXPECT_EQ(test_network1, test_network2);
+}
+
+TEST(gogamenn_basic_check, write_multiple_to_file) {
+    // Check that there is no data loss/roundng error in exporting networks to file
+    std::vector<GoGameNN> test_networks1(10, GoGameNN(5));
+    for (GoGameNN &element : test_networks1) {
+        element.initialize_random();
+
+    }
+
+    std::ofstream output_file("testgogamenns.txt");
+    for (GoGameNN &element : test_networks1) {
+        element.export_weights_stream(output_file);
+    }
+    output_file.close();
+
+    std::vector<GoGameNN> test_networks2(10, GoGameNN(5));
+
+    std::ifstream input_file("testgogamenns.txt");
+    for (GoGameNN &element : test_networks2) {
+        element.import_weights_stream(input_file);
+    }
+    input_file.close();
+
+    EXPECT_EQ(test_networks1, test_networks2);
+}

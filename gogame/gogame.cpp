@@ -434,6 +434,10 @@ const std::vector<GoMove> GoGame::get_move_list() const {
     return move_list;
 }
 
+const std::vector<GoMove> GoGame::get_move_history() const {
+    return move_history;
+}
+
 const std::array<uint8_t, 2> GoGame::get_prisoner_count() const {
     return prisoner_count;
 }

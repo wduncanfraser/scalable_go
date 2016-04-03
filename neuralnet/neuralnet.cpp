@@ -107,133 +107,6 @@ void NeuralNet::initialize_random() {
     }
 }
 
-int NeuralNet::export_weights_stream(std::ofstream &file, bool clean) {
-    if (file.is_open()) {
-        DoubleInt converter;
-        if (!clean) {
-            for (unsigned int i = 0; i < layer_count; i++) {
-                file << "Layer " << i << " count: " << neuron_counts[i] << std::endl;
-            }
-        } else {
-            file << layer_count << std::endl;
-
-            for (unsigned int i = 0; i < layer_count; i++) {
-                file << neuron_counts[i] << ",";
-            }
-            file << std::endl;
-        }
-
-        for (unsigned int i = 0; i < layer_count - 1; i++) {
-            if (!clean) {
-                std::cout << "\nLayer " << i << " to layer " << i + 1 << " weights: \n";
-            }
-
-            for (std::vector<double> &row : weights[i]) {
-                for (double &element : row) {
-                    converter.d = element;
-                    file << converter.i << ",";
-                }
-            }
-        }
-        // Newline for parsing on import
-        file << std::endl;
-
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int NeuralNet::import_weights_stream(std::ifstream &file) {
-    if (!file.is_open()) {
-        std::cout << "File is not open for import_weights_stream.\n";
-        return 1;
-    }
-
-    // Import weight values
-    unsigned int import_layer_count;
-    std::vector<unsigned int> import_layer_neuron_count;
-    // Vector to hold imported values
-    std::vector<std::vector<std::vector<double>>> import_weights;
-
-    // String and stringstream for converting data
-    std::string line;
-
-    std::istringstream layer_stream, weight_stream;
-
-    // Get layer count
-    getline(file, line, '\n');
-    import_layer_count = std::stoi(line);
-
-    if (import_layer_count != layer_count) {
-        std::cout << "Import layer count does not match.\n";
-        return 2;
-    }
-
-    import_weights.resize(layer_count - 1);
-
-    // Get layer neuron counts
-    getline(file, line, '\n');
-    layer_stream.str(line);
-
-    // string to hold line elements
-    std::string line_element;
-
-    while (layer_stream) {
-        if (!getline(layer_stream, line_element, ',')) {
-            break;
-        }
-
-        import_layer_neuron_count.push_back(std::stoi(line_element));
-    }
-
-    // Check that count matches layer count, malformed otherwise
-    if (import_layer_neuron_count.size() != layer_count) {
-        return 10;
-    }
-
-    // Check that neuron counts match
-    if (import_layer_neuron_count != neuron_counts) {
-        return 3;
-    }
-
-    // DoubleInt Union converter for importing doubles stored as ints
-    DoubleInt converter;
-
-    // Assign/Reize Weight Vectors to appropriate size [x][y] and initialize elements to 0.
-    // +1 is to account for bias
-    for (unsigned int i = 1; i < layer_count; i++) {
-        import_weights[i - 1].resize(neuron_counts[i]);
-
-        for (std::vector<double> &row : import_weights[i - 1]) {
-            row.assign(neuron_counts[i - 1] + 1, 0);
-        }
-    }
-
-    // Get line with weights
-    getline(file, line, '\n');
-    weight_stream.str(line);
-
-    // Import Weights
-    for (unsigned int i = 0; i < layer_count - 1; i++) {
-        for (std::vector<double> &row : import_weights[i]) {
-            for (double &element : row) {
-                if (!getline(weight_stream, line_element, ',')) {
-                    // Malformed, ran out of input
-                    return 10;
-                }
-                converter.i = std::stoll(line_element);
-                element = converter.d;
-            }
-        }
-    }
-
-    // Convert imported values to weight vectors
-    weights = import_weights;
-
-    return 0;
-}
-
 void NeuralNet::feed_forward(const std::vector<double> &input) {
     // If the size of the input vector is not the same as the Neural Network input layer, return error code.
     if (input.size() != neuron_counts[0]) {
@@ -285,4 +158,118 @@ void NeuralNet::mutate(const double &radius) {
 
 std::vector<double> NeuralNet::get_output() const {
     return neurons[layer_count - 1];
+}
+
+void NeuralNet::export_weights_stream(std::ofstream &file) {
+    if (file.is_open()) {
+        DoubleInt converter;
+
+        file << layer_count << std::endl;
+
+        for (unsigned int i = 0; i < layer_count; i++) {
+            file << neuron_counts[i] << ",";
+        }
+        file << std::endl;
+
+        for (unsigned int i = 0; i < layer_count - 1; i++) {
+            for (std::vector<double> &row : weights[i]) {
+                for (double &element : row) {
+                    converter.d = element;
+                    file << converter.i << ",";
+                }
+            }
+        }
+        // Newline for parsing on import
+        file << std::endl;
+    } else {
+        throw NeuralNetExportError();
+    }
+}
+
+void NeuralNet::import_weights_stream(std::ifstream &file) {
+    if (!file.is_open()) {
+        std::cout << "File is not open for import_weights_stream.\n";
+        throw NeuralNetImportError();
+    }
+
+    // Import weight values
+    unsigned int import_layer_count;
+    std::vector<unsigned int> import_layer_neuron_count;
+    // Vector to hold imported values
+    std::vector<std::vector<std::vector<double>>> import_weights;
+
+    // String and stringstream for converting data
+    std::string line;
+
+    std::istringstream layer_stream, weight_stream;
+
+    // Get layer count
+    getline(file, line, '\n');
+    import_layer_count = std::stoi(line);
+
+    if (import_layer_count != layer_count) {
+        std::cout << "Import layer count does not match.\n";
+        throw NeuralNetImportError();
+    }
+
+    import_weights.resize(layer_count - 1);
+
+    // Get layer neuron counts
+    getline(file, line, '\n');
+    layer_stream.str(line);
+
+    // string to hold line elements
+    std::string line_element;
+
+    while (layer_stream) {
+        if (!getline(layer_stream, line_element, ',')) {
+            break;
+        }
+
+        import_layer_neuron_count.push_back(std::stoi(line_element));
+    }
+
+    // Check that count matches layer count, malformed otherwise
+    if (import_layer_neuron_count.size() != layer_count) {
+        throw NeuralNetImportError();
+    }
+
+    // Check that neuron counts match
+    if (import_layer_neuron_count != neuron_counts) {
+        throw NeuralNetImportError();
+    }
+
+    // DoubleInt Union converter for importing doubles stored as ints
+    DoubleInt converter;
+
+    // Assign/Resize Weight Vectors to appropriate size [x][y] and initialize elements to 0.
+    // +1 is to account for bias
+    for (unsigned int i = 1; i < layer_count; i++) {
+        import_weights[i - 1].resize(neuron_counts[i]);
+
+        for (std::vector<double> &row : import_weights[i - 1]) {
+            row.assign(neuron_counts[i - 1] + 1, 0);
+        }
+    }
+
+    // Get line with weights
+    getline(file, line, '\n');
+    weight_stream.str(line);
+
+    // Import Weights
+    for (unsigned int i = 0; i < layer_count - 1; i++) {
+        for (std::vector<double> &row : import_weights[i]) {
+            for (double &element : row) {
+                if (!getline(weight_stream, line_element, ',')) {
+                    // Malformed, ran out of input
+                    throw NeuralNetImportError();
+                }
+                converter.i = std::stoll(line_element);
+                element = converter.d;
+            }
+        }
+    }
+
+    // Convert imported values to weight vectors
+    weights = import_weights;
 }

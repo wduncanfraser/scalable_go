@@ -78,7 +78,7 @@ TEST(gogame_basic_check, game_copy_blank) {
 TEST(gogame_basic_check, first_move_generation_count) {
     GoGame test(5);
     test.generate_moves(0);
-    EXPECT_EQ(26, test.get_move_list().size());
+    EXPECT_EQ(static_cast<unsigned int>(26), test.get_move_list().size());
 }
 
 TEST(gogame_basic_check, first_move_generation) {

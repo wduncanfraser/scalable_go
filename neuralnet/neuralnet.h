@@ -9,8 +9,18 @@
 #include <cmath>
 
 class NeuralNetFeedForwardError : public std::runtime_error {
-public:
+ public:
     NeuralNetFeedForwardError() : std::runtime_error("NeuralNetFeedForwardError") { }
+};
+
+class NeuralNetExportError : public std::runtime_error {
+ public:
+    NeuralNetExportError() : std::runtime_error("NeuralNetExportError") { }
+};
+
+class NeuralNetImportError : public std::runtime_error {
+ public:
+    NeuralNetImportError() : std::runtime_error("NeuralNetImportError") { }
 };
 
 // Support function for calculating activate.
@@ -62,17 +72,6 @@ class NeuralNet {
     // Initialize Neural Network with random weights in a uniform distribution
     void initialize_random();
 
-    // Export weights to specified ofstream
-    int export_weights_stream(std::ofstream &file, bool clean);
-
-    // Import weights from specified file. Each weight set needs to be CSV on a single line
-    // Returns 0 if no error and import succeeds
-    // 1: Failed to open file
-    // 2: Layer count doesn't match
-    // 3: Neuron count doesn't match
-    // 10: File malformed
-    int import_weights_stream(std::ifstream &file);
-
     // FeedForward Function, calculate output based on inputs.
     void feed_forward(const std::vector<double> &input);
 
@@ -81,6 +80,12 @@ class NeuralNet {
 
     // Get output
     std::vector<double> get_output() const;
+
+    // Export weights to specified ofstream
+    void export_weights_stream(std::ofstream &file);
+
+    // Import weights from specified file. Each weight set needs to be CSV on a single line
+    void import_weights_stream(std::ifstream &file);
 };
 
 #endif  // NEURALNET_NEURALNET_H_

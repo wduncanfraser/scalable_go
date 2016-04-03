@@ -255,7 +255,7 @@ class GoMove {
     // Function to get prisoner count
     const uint8_t get_prisoners_captured() const;
 
-    // Function to check if hte move is a pass.
+    // Function to check if the move is a pass.
     const bool check_pass() const;
 };
 
@@ -309,6 +309,9 @@ class GoGame {
 
     // Function to get the move list
     const std::vector<GoMove> get_move_list() const;
+
+    // Function to get the move history
+    const std::vector<GoMove> get_move_history() const;
 
     // Function to get the prisoner counts
     const std::array<uint8_t, 2> get_prisoner_count() const;
