@@ -1,14 +1,33 @@
+// Copyright [2015, 2016] <duncan@wduncanfraser.com>
 // Prototype of Neural Network class with arbitrary layers
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
 
-// ifdef to prevent multiple inclusions.
 #ifndef NEURALNET_NEURALNET_H_
 #define NEURALNET_NEURALNET_H_
 
+#include <vector>
+#include <fstream>
+#include <cmath>
+
+class NeuralNetFeedForwardError : public std::runtime_error {
+ public:
+    NeuralNetFeedForwardError() : std::runtime_error("NeuralNetFeedForwardError") { }
+};
+
+class NeuralNetExportError : public std::runtime_error {
+ public:
+    NeuralNetExportError() : std::runtime_error("NeuralNetExportError") { }
+};
+
+class NeuralNetImportError : public std::runtime_error {
+ public:
+    NeuralNetImportError() : std::runtime_error("NeuralNetImportError") { }
+};
+
 // Support function for calculating activate.
 // Declared inline as it is only 1 line to increase speed.
-inline double activate(double x);
+inline double activate(double x) {
+    return ((x) / (1 + std::abs(x)));
+}
 
 // Union for storing weights due to rounding
 union DoubleInt {
@@ -47,33 +66,26 @@ class NeuralNet {
     // Comparison Operator
     bool operator==(const NeuralNet &i_network) const;
 
-    // Inequality OPerator
+    // Inequality Operator
     bool operator!=(const NeuralNet &i_network) const;
 
-    // Initialize Nueral Network with random weights in a uniform distribution
+    // Initialize Neural Network with random weights in a uniform distribution
     void initialize_random();
 
-    // Export weights to specified ofstream
-    int export_weights_stream(std::ofstream &file, bool clean);
-
-    // Import weights from specified file. Each weight set needs to be CSV on a single line
-    // Returns 0 if no error and import succeeds
-    // 1: Failed to open file
-    // 2: Layer count doesn't match
-    // 3: Neuron count doesn't match
-    // 10: File malformed
-    int import_weights_stream(std::ifstream &file);
-
     // FeedForward Function, calculate output based on inputs.
-    // Returns 0 if no error
-    // Returns 1 if vector size does not match neural network input layer
-    int feed_forward(const std::vector<double> &input);
+    void feed_forward(const std::vector<double> &input);
 
     // Mutator. Randomly mutates
-    int mutate(const double &radius);
+    void mutate(const double &radius);
 
     // Get output
     std::vector<double> get_output() const;
+
+    // Export weights to specified ofstream
+    void export_weights_stream(std::ofstream &file);
+
+    // Import weights from specified file. Each weight set needs to be CSV on a single line
+    void import_weights_stream(std::ifstream &file);
 };
 
 #endif  // NEURALNET_NEURALNET_H_

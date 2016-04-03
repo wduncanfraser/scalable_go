@@ -1,6 +1,4 @@
-//
-// Created by W. Duncan Fraser on 1/28/16.
-//
+// Copyright [2016] <duncan@wduncanfraser.com>
 
 #include <vector>
 #include <iostream>
@@ -71,12 +69,13 @@ TEST(neuralnet_basic_check, write_to_file) {
     test1.initialize_random();
 
     std::ofstream output_file("testweights.txt");
-    test1.export_weights_stream(output_file, true);
+    test1.export_weights_stream(output_file);
     output_file.close();
 
     NeuralNet test2(LAYERS, {INPUT, HL1, HL2, OUTPUT});
     std::ifstream input_file("testweights.txt");
     test2.import_weights_stream(input_file);
+    input_file.close();
 
     EXPECT_EQ(test1, test2);
 }

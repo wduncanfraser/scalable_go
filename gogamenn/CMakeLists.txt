@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(neuralnet)
+project(gogamenn)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -8,11 +8,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 set(HEADER_FILES
-        neuralnet.h
+        gogamenn.h
         )
 
 set(SOURCE_FILES
-        neuralnet.cpp
+        gogamenn.cpp
         )
 
-add_library(neuralnet STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(gogamenn STATIC ${SOURCE_FILES} ${HEADER_FILES})

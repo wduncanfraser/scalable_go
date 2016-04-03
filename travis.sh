@@ -10,4 +10,6 @@ make
 
 # Run Tests
 ./neuralnet_tests
-./goboard_tests
+./gogame_tests
+./gogamenn_tests
+./gogameab_tests

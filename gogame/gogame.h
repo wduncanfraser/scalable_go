@@ -1,17 +1,23 @@
-// Prototypes for Move Struct and GoBoard Class
-// Author: W. Duncan Fraser
-// Email: duncan@wduncanfraser.com
+// Copyright [2016] <duncan@wduncanfraser.com>
+// Prototypes for GoGame and related classes
 
-#ifndef GOBOARD_GOBOARD_H_
-#define GOBOARD_GOBOARD_H_
+#ifndef GOGAME_GOGAME_H_
+#define GOGAME_GOGAME_H_
 
 #include <algorithm>
+#include <array>
+#include <vector>
+#include <unordered_set>
+#include <cstdint>
+#include <stdexcept>
 
 #define BLACK_MASK 1
 #define WHITE_MASK 3
-#define STONE_COUNT 180
+#define PIECE_MASK 1
+#define TEAM_MASK 3
+#define SCORED_MASK 4
 
-// GoBoard exceptions
+// GoGame exceptions
 class GoBoardInitError : public std::runtime_error {
  public:
     GoBoardInitError() : std::runtime_error("GoBoardInitError") { }
@@ -27,8 +33,14 @@ class GoBoardBadMove : public std::runtime_error {
     GoBoardBadMove() : std::runtime_error("GoBoardBadMove") { }
 };
 
-// Struct for holding x,y coordinates
-struct XYCoordinate {
+class GoBoardBadMask : public std::runtime_error {
+public:
+    GoBoardBadMask() : std::runtime_error("GoBoardBadMask") { }
+};
+
+// Class for holding x,y coordinates
+class XYCoordinate {
+ public:
     uint8_t x;
     uint8_t y;
 
@@ -53,6 +65,17 @@ inline uint8_t get_mask(const bool color) {
         return uint8_t(WHITE_MASK);
     } else {
         return uint8_t(BLACK_MASK);
+    }
+}
+
+// Function to get bool from piece mask
+inline bool get_piece_bool(const uint8_t mask) {
+    if ((mask & TEAM_MASK) == BLACK_MASK) {
+        return 0;
+    } else if ((mask & TEAM_MASK) == WHITE_MASK) {
+        return 1;
+    } else {
+        throw GoBoardBadMask();
     }
 }
 
@@ -92,6 +115,36 @@ inline bool check_adjacent(const XYCoordinate &i_coordinate_1, const XYCoordinat
                       adjacent_coordinates.end(), i_coordinate_2) != adjacent_coordinates.end());
 }
 
+// Struct for holding a Go Board
+class GoBoard {
+ public:
+    // Go board
+    // TODO(wdfraser): Make this private with [] operator
+    std::vector<std::vector<uint8_t>> board;
+
+    // Constructor with size specification
+    explicit GoBoard(const uint8_t board_size);
+
+    // Constructor with board passed as a vector
+    explicit GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
+
+    // Copy Constructor
+    GoBoard(const GoBoard &i_goboard);
+
+    // Comparison Operator
+    bool operator==(const GoBoard &i_goboard) const;
+
+    // Copy operator
+    GoBoard& operator= (const GoBoard &i_goboard);
+
+    // Function to get the board size
+    const uint8_t get_size() const;
+
+    // Check to make sure coordinates are within the bounds of the Go Board.
+    // Returns true if within bounds. Otherwise, false.
+    const inline bool within_bounds(const XYCoordinate &i_piece) const;
+};
+
 // Class for holding a Go string (series of adjacently connected stones of the same color).
 class GoString {
  private:
@@ -99,10 +152,15 @@ class GoString {
     std::vector<XYCoordinate> members;
 
     // Coordinates providing liberty
+    // Not used in territory strings
     std::vector<XYCoordinate> liberty;
 
     // Board size for String
     uint8_t board_size;
+
+    // Value determining border of territory strings
+    // 0 = neutral, BLACK_MASK = black, WHITE_MASK = white.
+    uint8_t territory_border;
 
  public:
     // Default constructor
@@ -137,29 +195,43 @@ class GoString {
 
     // Function to get the board size
     const uint8_t get_size() const;
+
+    // Function to set the territory border
+    // 0 = neutral, BLACK_MASK = black, WHITE_MASK = white.
+    void set_border(uint8_t color);
+
+    // Function to get the teritory border
+    const uint8_t get_border() const;
 };
 
-// Struct for holding a possible move
-struct Move {
+// Class for holding a possible move
+class GoMove {
+    friend class GoGame;
+ private:
     // Resultant Game Board
-    std::vector<std::vector<uint8_t>> board;
+    GoBoard goboard;
 
     // Piece placed
-    uint8_t piece_x, piece_y;
+    XYCoordinate piece;
 
-    // Constructor
-    Move(const std::vector<std::vector<uint8_t>> &i_board,
-         const uint8_t i_piece_x, const uint8_t i_piece_y);
+    // Count of prisoners captures
+    uint8_t prisoners_captured;
+
+    // Flag to determine if the move is a pass
+    bool pass;
+
+ public:
+    // Pass Constructor, takes the current board only
+    explicit GoMove(const GoBoard &i_goboard);
+
+    // Standard Constructor, takes the existing board state and the piece to be placed
+    GoMove(const GoBoard &i_goboard, const XYCoordinate &i_piece);
 
     // Comparison Operator
-    bool operator==(const Move &i_move) const;
+    bool operator==(const GoMove &i_move) const;
 
     // Copy operator
-    Move& operator= (const Move &i_move);
-
-    // Check to make sure coordinates are within the bounds of the Go Board.
-    // Returns true if within bounds. Otherwise, false.
-    const inline bool within_bounds(const uint8_t x, const uint8_t y) const;
+    GoMove& operator= (const GoMove &i_move);
 
     // Function to construct a string given an existing string
     const GoString construct_string(GoString i_string, const bool color) const;
@@ -169,59 +241,87 @@ struct Move {
     bool remove_string(const GoString &i_string, const bool color);
 
     // Determines the impact of a move on the board (modifies board). Returns -1 if the piece has already been placed,
-    // otherwise returns the liberty of the piece/string
+    // otherwise returns the liberty of the piece/string.
+    // Pass moves return 0.
     // black = 0, white = 1
     int check_move(const bool color);
+
+    // Function to get board
+    const GoBoard get_board() const;
+
+    // Function to get piece
+    const XYCoordinate get_piece() const;
+
+    // Function to get prisoner count
+    const uint8_t get_prisoners_captured() const;
+
+    // Function to check if the move is a pass.
+    const bool check_pass() const;
 };
 
-class GoBoard {
+class GoGame {
  private:
     // Game board
-    std::vector<std::vector<uint8_t>> board;
+    GoBoard goboard;
 
-    // Move list. Cached list of possible moves from current board state.
-    std::vector<Move> move_list;
+    // GoMove list. Cached list of possible moves from current board state.
+    std::vector<GoMove> move_list;
 
-    // Move history
-    std::vector<Move> move_history;
+    // GoMove history
+    // TODO(wdfraser): Let's make this a hash/unordered_set for faster lookup
+    std::vector<GoMove> move_history;
 
     // Flag to determine if move_list is dirty
     bool move_list_dirty;
 
     // Flag to determine last move_list color
     bool move_list_color;
+
+    // Array to hold prisoners.
+    // prisoner_count[0] = black
+    // prisoner_count[1] = white
+    std::array<uint8_t, 2> prisoner_count;
+
+    // Array to hold pieces placed count
+    std::array<uint8_t, 2> pieces_placed;
+
  public:
     // Constructor with size specification
-    explicit GoBoard(const uint8_t board_size);
+    explicit GoGame(const uint8_t board_size);
 
     // Constructor with board passed as a vector
-    explicit GoBoard(const std::vector<std::vector<uint8_t>> &i_board);
+    explicit GoGame(const GoBoard &i_goboard);
 
     // Copy Constructor
-    GoBoard(const GoBoard &i_goboard);
+    GoGame(const GoGame &i_gogame);
 
     // Comparison Operator
-    bool operator==(const GoBoard &i_board) const;
-
-    // Destructor
-    virtual ~GoBoard();
+    bool operator==(const GoGame &i_gogame) const;
 
     // Function to get the board size
     const uint8_t get_size() const;
 
     // Function to get current board state
-    const std::vector<std::vector<uint8_t>> get_board() const;
+    const GoBoard get_board() const;
+
+    // Function to set the board. Overrides all checks and should only be used for testing
+    void set_board(const GoBoard &i_goboard);
 
     // Function to get the move list
-    const std::vector<Move> get_move_list() const;
+    const std::vector<GoMove> get_move_list() const;
 
-    // Check to make sure coordinates are within the bounds of the Go Board.
-    // Returns true if within bounds. Otherwise, false.
-    const inline bool within_bounds(const uint8_t x, const uint8_t y) const;
+    // Function to get the move history
+    const std::vector<GoMove> get_move_history() const;
 
-    // Checks if moves has been made before
+    // Function to get the prisoner counts
+    const std::array<uint8_t, 2> get_prisoner_count() const;
+
+    // Function to get the pieces placed count
+    const std::array<uint8_t, 2> get_pieces_placed() const;
+
+    // Checks if move has been made before
     // Returns true if board state has previously existed.
-    const bool check_move_history(const Move &i_move) const;
+    const bool check_move_history(const GoMove &i_move) const;
 
     // Generate all possible moves for specified color.
     // black = 0, white = 1
@@ -230,8 +330,17 @@ class GoBoard {
 
     // Makes a move
     // Throws GoBoardBadMove exception if move is not valid
-    void make_move(const Move &i_move);
+    void make_move(const GoMove &i_move, const bool color);
+
+    // Construct a territory string
+    const GoString construct_territory_string(GoString i_string) const;
+
+    // Calculates current scores. First value is black score. Second is white.
+    // Using territory scoring with no seki.
+    // Territory is calculated as a string of empty spaces surrounded by only a single color.
+    // Prisoner count is added to territory score.
+    const std::array<uint8_t, 2> calculate_scores() const;
 };
 
 
-#endif  // GOBOARD_GOBOARD_H_
+#endif  // GOGAME_GOGAME_H_
