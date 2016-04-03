@@ -127,6 +127,7 @@ int main(int argc, char* argv[]) {
         start_cycle = STARTCYCLE;
         end_cycle = ENDCYCLE;
     } else if (argc == 5) {
+        // TODO(wdfraser): Add some better error checking
         board_size = uint8_t(atoi(argv[1]));
         training_set = atoi(argv[2]);
         start_cycle = atoi(argv[3]);
