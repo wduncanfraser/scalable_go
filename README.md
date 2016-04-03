@@ -6,8 +6,8 @@ CS Masters Project. Scaling evolutionary neural networks for Go artificial intel
 
 ## Usage
 ### Training
-+   Once compiled, create a directory in the same location as the binary called "size<board size>set<set number>". For example, "size3set1".
-+   Run training with "./scalable_go_training <board_size> <set> <start_generation> <end_generation>".
++   Once compiled, create a directory in the same location as the binary called "size\<board size\>set\<set number\>". For example, "size3set1".
++   Run training with "./scalable_go_training \<board_size\> \<set\> \<start_generation\> \<end_generation\>".
 
 ## Structure
 +   gogame/: Library for defining Go game, board, and move generation
