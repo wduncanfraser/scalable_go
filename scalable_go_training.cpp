@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <stdexcept>
 
 #include "gogame.h"
 #include "gogamenn.h"
@@ -21,8 +22,12 @@
 #define STARTCYCLE 1
 #define ENDCYCLE 200
 
+class TrainingArgumentError : public std::runtime_error {
+ public:
+    TrainingArgumentError() : std::runtime_error("TrainingArgumentError") { }
+};
 
-std::vector<int> score_networks(std::vector<GoGameNN> networks) {
+std::vector<int> score_networks(std::vector<GoGameNN> networks, const uint8_t board_size) {
     // Vector to hold win counts for networks
     std::vector<int> scores(networks.size(), 0);
 
@@ -31,7 +36,7 @@ std::vector<int> score_networks(std::vector<GoGameNN> networks) {
     for (unsigned int i = 0; i < networks.size(); i++) {
         for (unsigned int j = 0; j < networks.size(); j++) {
             // GoGame instance used for training matches
-            GoGame training_game(BOARD_SIZE);
+            GoGame training_game(board_size);
 
             GoMove best_move(training_game.get_board());
 
@@ -109,15 +114,34 @@ std::vector<int> score_networks(std::vector<GoGameNN> networks) {
     return scores;
 }
 
-int main() {
-    for (unsigned int n = STARTCYCLE; n <= ENDCYCLE; n++) {
-        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(BOARD_SIZE));
+int main(int argc, char* argv[]) {
+    uint8_t board_size = 0;
+    unsigned int training_set = 0;
+    unsigned int start_cycle = 0;
+    unsigned int end_cycle = 0;
+    // Validate command line parameters
+    if (argc == 1) {
+        // No parameters, use the Macros
+        board_size = BOARD_SIZE;
+        training_set = TRAINING_SET;
+        start_cycle = STARTCYCLE;
+        end_cycle = ENDCYCLE;
+    } else if (argc == 5) {
+        board_size = uint8_t(atoi(argv[1]));
+        training_set = atoi(argv[2]);
+        start_cycle = atoi(argv[3]);
+        end_cycle = atoi(argv[4]);
+    } else {
+        throw TrainingArgumentError();
+    }
+    for (unsigned int n = start_cycle; n <= end_cycle; n++) {
+        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size));
         std::vector<int> training_scores(NETWORKCOUNT);
 
         unsigned int export_count = 0;
 
         std::string output_directory =
-                "size" + std::to_string(BOARD_SIZE) + "set" + std::to_string(TRAINING_SET) + "/";
+                "size" + std::to_string(board_size) + "set" + std::to_string(training_set) + "/";
 
         std::ifstream best_networks_in(output_directory + "lastbestnetworks.txt");
 
@@ -149,7 +173,7 @@ int main() {
             break;
         }
 
-        training_scores = score_networks(training_networks);
+        training_scores = score_networks(training_networks, board_size);
 
         for (unsigned int i = 0; i < training_scores.size(); i++) {
             std::cout << "Neural Network: " << i << ". Score: " << training_scores[i] << ".\n";
