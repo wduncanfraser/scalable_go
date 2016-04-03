@@ -2,17 +2,30 @@
 
 # Scalable Go
 ## Purpose
-CS Masters Thesis. Scaling evolutionary neural networks for Go artificial intelligence.
+CS Masters Project. Scaling evolutionary neural networks for Go artificial intelligence.
 
 ## Usage
 TBD
 
 ## Structure
-+   ab_prune/: Library defining AB Pruning algorithm and helper functions. Additionally, defines NeuralNet wrapper for Go.
 +   gogame/: Library for defining Go game, board, and move generation
 +   neuralnet/: Neural Network Library
++   gogamenn/: Library defining NeuralNet wrapper for Go and helper functions.
++   gogameab/: Library defining AB Pruning algorithm.
 +   tests/: Units and regression tests
 +   benchmark_neuralnet.cpp: Basic benchmark of neural network performance.
+
+## Neuralnet Structure
+### Layer 1 Subsection NeuralNet Node Counts
++ Input Layer: subsection size ^2, so 9 for a 3x3 subsection
++ HL1: Input Layer * (4/3) rounded down, so 12 for a 3x3 subsection
++ HL2: HL1 * (1/4) rounded down, so 3 for a 3x3 subsection
++ Output Layer: 1
+
+## Layer 2 Neuralnet Nodes
++ Input Layer: Outputs from all Layer 1 networks, in addition to pieces placed, friendly, and opponent prisoner counts
++ HL1: Input Layer * (2/3) rounded down
++ Output Layer: 1
 
 ## External Resources
 +   [Google Test](https://github.com/google/googletest)

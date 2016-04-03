@@ -149,5 +149,3 @@ TEST(gogame_move_check, simple_game_1) {
 
     EXPECT_EQ(expected, test.get_board());
 }
-
-// TODO(wdfraser): Need a lot more unit testing on move generation

@@ -6,10 +6,18 @@
 
 #include <vector>
 #include <fstream>
+#include <cmath>
+
+class NeuralNetFeedForwardError : public std::runtime_error {
+public:
+    NeuralNetFeedForwardError() : std::runtime_error("NeuralNetFeedForwardError") { }
+};
 
 // Support function for calculating activate.
 // Declared inline as it is only 1 line to increase speed.
-inline double activate(double x);
+inline double activate(double x) {
+    return ((x) / (1 + std::abs(x)));
+}
 
 // Union for storing weights due to rounding
 union DoubleInt {
@@ -48,10 +56,10 @@ class NeuralNet {
     // Comparison Operator
     bool operator==(const NeuralNet &i_network) const;
 
-    // Inequality OPerator
+    // Inequality Operator
     bool operator!=(const NeuralNet &i_network) const;
 
-    // Initialize Nueral Network with random weights in a uniform distribution
+    // Initialize Neural Network with random weights in a uniform distribution
     void initialize_random();
 
     // Export weights to specified ofstream
@@ -66,12 +74,10 @@ class NeuralNet {
     int import_weights_stream(std::ifstream &file);
 
     // FeedForward Function, calculate output based on inputs.
-    // Returns 0 if no error
-    // Returns 1 if vector size does not match neural network input layer
-    int feed_forward(const std::vector<double> &input);
+    void feed_forward(const std::vector<double> &input);
 
     // Mutator. Randomly mutates
-    int mutate(const double &radius);
+    void mutate(const double &radius);
 
     // Get output
     std::vector<double> get_output() const;

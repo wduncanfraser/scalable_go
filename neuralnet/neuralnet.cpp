@@ -10,11 +10,6 @@
 
 #include "neuralnet.h"
 
-inline double activate(double x) {
-    // Using
-    return ((x) / (1 + std::abs(x)));
-}
-
 NeuralNet::NeuralNet() {
 
 }
@@ -239,10 +234,10 @@ int NeuralNet::import_weights_stream(std::ifstream &file) {
     return 0;
 }
 
-int NeuralNet::feed_forward(const std::vector<double> &input) {
+void NeuralNet::feed_forward(const std::vector<double> &input) {
     // If the size of the input vector is not the same as the Neural Network input layer, return error code.
     if (input.size() != neuron_counts[0]) {
-        return 1;
+        throw NeuralNetFeedForwardError();
     } else {
         // Assign input_Neurons to match input. Last element of input_Neurons should not be touched as it is bias.
         // For each loops not being used throughout function to avoid bias nuerons and needing iterators for
@@ -267,13 +262,10 @@ int NeuralNet::feed_forward(const std::vector<double> &input) {
                 neurons[i][j] = activate(neurons[i][j]);
             }
         }
-
-        // Finished executing without error, return 0;
-        return 0;
     }
 }
 
-int NeuralNet::mutate(const double &radius) {
+void NeuralNet::mutate(const double &radius) {
     // Setup random number generator
     std::random_device rd;
     // Generate random number as seed for twister engine
@@ -289,9 +281,6 @@ int NeuralNet::mutate(const double &radius) {
             }
         }
     }
-
-    // Finished executing without error, return 0;
-    return 0;
 }
 
 std::vector<double> NeuralNet::get_output() const {

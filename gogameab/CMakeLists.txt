@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(gogame)
+project(gogameab)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 
 set(HEADER_FILES
-        ab_prune.h
+        gogameab.h
         )
 
 set(SOURCE_FILES
-        ab_prune.cpp
+        gogameab.cpp
         )
 
-add_library(ab_prune STATIC ${SOURCE_FILES} ${HEADER_FILES})
+add_library(gogameab STATIC ${SOURCE_FILES} ${HEADER_FILES})
