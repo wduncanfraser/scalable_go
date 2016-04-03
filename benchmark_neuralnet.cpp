@@ -41,7 +41,7 @@ int main() {
 
     // Start timing for feedforward
     start = std::chrono::system_clock::now();
-    // #pragma omp parallel for firstprivate(test1)
+    #pragma omp parallel for firstprivate(test1)
     for (int i = 0; i < 1000000; i++) {
         test1.feed_forward(testInput);
     }
