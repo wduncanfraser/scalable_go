@@ -6,6 +6,7 @@
 #include <string>
 #include <limits>
 #include <stdexcept>
+#include <chrono>
 
 #include "gogame.h"
 #include "gogamenn.h"
@@ -115,6 +116,12 @@ std::vector<int> score_networks(std::vector<GoGameNN> networks, const uint8_t bo
 }
 
 int main(int argc, char* argv[]) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+    std::time_t start_time = std::chrono::system_clock::to_time_t(start);
+    std::cout << "Started computation at " << std::ctime(&start_time) << std::endl;
+
+
     uint8_t board_size = 0;
     unsigned int training_set = 0;
     unsigned int start_cycle = 0;
@@ -222,4 +229,10 @@ int main(int argc, char* argv[]) {
             break;
         }
     }
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+    std::cout << "Finished computation at " << std::ctime(&end_time) << "elapsed time: " <<
+            elapsed_seconds.count() << "s" << std::endl;
 }
