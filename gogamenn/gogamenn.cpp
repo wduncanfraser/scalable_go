@@ -169,10 +169,11 @@ void GoGameNN::feed_forward(const std::vector<std::vector<double>> &input_segmen
     }
 
     // Layer 1 is processed. Append values for piece and prisoner counts to input.
-    // TODO(wdfraser): Normalize these values
-    layer2_inputs.push_back(pieces_played);
-    layer2_inputs.push_back(prisoner_count);
-    layer2_inputs.push_back(opponent_prisoner_count);
+    // Values are normalized to 1/2 the total board pieces rounded down. So for a 3x3 game. 9 pieces. Normalized by 4.
+    uint8_t normalization = uint8_t((board_size * board_size) / 2);
+    layer2_inputs.push_back(pieces_played / normalization);
+    layer2_inputs.push_back(prisoner_count / normalization);
+    layer2_inputs.push_back(opponent_prisoner_count / normalization);
 
     // Feed forward Layer 2
     layer2.feed_forward(layer2_inputs);
