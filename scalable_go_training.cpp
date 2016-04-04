@@ -22,6 +22,7 @@
 #define TRAINING_SET 1
 #define STARTCYCLE 1
 #define ENDCYCLE 200
+#define UNIFORM 0
 
 class TrainingArgumentError : public std::runtime_error {
  public:
@@ -126,6 +127,7 @@ int main(int argc, char* argv[]) {
     unsigned int training_set = 0;
     unsigned int start_cycle = 0;
     unsigned int end_cycle = 0;
+    bool uniform = 0;
     // Validate command line parameters
     if (argc == 1) {
         // No parameters, use the Macros
@@ -133,17 +135,19 @@ int main(int argc, char* argv[]) {
         training_set = TRAINING_SET;
         start_cycle = STARTCYCLE;
         end_cycle = ENDCYCLE;
-    } else if (argc == 5) {
+        uniform = UNIFORM;
+    } else if (argc == 6) {
         // TODO(wdfraser): Add some better error checking
         board_size = uint8_t(atoi(argv[1]));
         training_set = atoi(argv[2]);
         start_cycle = atoi(argv[3]);
         end_cycle = atoi(argv[4]);
+        uniform = atoi(argv[5]) != 0;
     } else {
         throw TrainingArgumentError();
     }
     for (unsigned int n = start_cycle; n <= end_cycle; n++) {
-        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size, false));
+        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size, uniform));
         std::vector<int> training_scores(NETWORKCOUNT);
 
         unsigned int export_count = 0;
