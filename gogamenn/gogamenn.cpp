@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <limits>
 #include <cmath>
+#include <random>
 
 #include "gogamenn.h"
 
@@ -199,4 +200,50 @@ void GoGameNN::import_weights_stream(std::ifstream &file) {
     }
     // Import layer 2 network
     layer2.import_weights_stream(file);
+}
+
+void GoGameNN::scale_network(const GoGameNN &i_network) {
+    // First, validate that we are 1 size larger than the passed network.
+    if (board_size != (i_network.board_size + SEGMENT_DIVISION)) {
+        throw GoGameNNScaleError();
+    }
+
+    // Set Random generator for use when selecting networks from previous generation
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    // Copy existing networks
+    // We should end up with (board_size - segment_size + 1) ^ 2 of the previous size networks.
+    // For example:
+    // A 5x5 network would have 9 3x3 subsections
+    // A 7x7 Network would have 9 5x5 subsections and 25 3x3 subsections.
+    // A 9x9 Network would have 9 7x7 subsections, 25 5x5 subsections, and 49 3x3 subsections.
+    // Setup int for storing current segment.
+    unsigned int current_offset = 0;
+    unsigned int previous_offset = 0;
+    // Loop starting at the smallest subsection.
+    for (uint8_t segment_size = SEGMENT_MIN; segment_size < board_size; segment_size += SEGMENT_DIVISION) {
+        unsigned int total_segments = (board_size - segment_size + 1) * (board_size - segment_size + 1);
+        unsigned int previous_total_segments = (board_size - segment_size - 1) * (board_size - segment_size - 1);
+
+        // Loop through all segments of a given size. Randomly assign them an appropriate network from
+        // the passed network.
+        for (unsigned int segment = 0; segment < total_segments; segment++) {
+            std::uniform_int_distribution<> dis(0, previous_total_segments - 1);
+
+            layer1[current_offset + segment] = i_network.layer1[previous_offset + dis(gen)];
+        }
+
+        // Finished assigning current segment size. Increment offsets.
+        current_offset += total_segments;
+        previous_offset += previous_total_segments;
+    }
+
+    // At this point, all scaling should be done. Need to randomly initialize the largest subsection and layer 2.
+    layer1[current_offset].initialize_random();
+    layer2.initialize_random();
+}
+
+std::vector<NeuralNet> GoGameNN::get_layer1() {
+    return layer1;
 }
