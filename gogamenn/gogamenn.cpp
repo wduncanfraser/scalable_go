@@ -100,6 +100,9 @@ GoGameNN::GoGameNN(const uint8_t i_board_size, const bool i_uniform) {
     // Get the segment sizes for the board_size. get_go_board_segments will throw if board is not of proper size
     std::vector<uint8_t> segments = get_go_board_segments(board_size);
 
+    // Store the count of layer 1 segments.
+    uint16_t layer_1_segments = 0;
+
     for (uint8_t &segment : segments) {
         // Determine Network dimensions
         std::vector<unsigned int> neuron_counts;
@@ -108,14 +111,15 @@ GoGameNN::GoGameNN(const uint8_t i_board_size, const bool i_uniform) {
         neuron_counts.push_back(neuron_counts[1] / 4);
         neuron_counts.push_back(1);
 
+        // Not using pow, to avoid converting to floating point
+        uint16_t segment_count = (board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1));
+        layer_1_segments += segment_count;
+
         if (uniform) {
             // If uniform, we only need 1 network for each segment size.
             layer1.push_back(NeuralNet(4, neuron_counts));
         } else {
             // If not uniform, we need a network for each subsection
-            // Not using pow, to avoid converting to floating point
-            uint16_t segment_count = (board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1));
-
             // Creating a network for each segment.
             for (uint16_t i = 0; i < segment_count; i++) {
                 layer1.push_back(NeuralNet(4, neuron_counts));
@@ -126,7 +130,7 @@ GoGameNN::GoGameNN(const uint8_t i_board_size, const bool i_uniform) {
     // Create layer 2 network
     // Determine Network dimensions
     std::vector<unsigned int> neuron_counts;
-    neuron_counts.push_back(layer1.size() + 3);
+    neuron_counts.push_back(layer_1_segments + 3);
     neuron_counts.push_back((neuron_counts[0] * 2) / 3);
     neuron_counts.push_back(1);
     layer2 = NeuralNet(3, neuron_counts);
@@ -175,6 +179,7 @@ void GoGameNN::feed_forward(const std::vector<std::vector<double>> &input_segmen
             segment_counts.push_back((board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1)));
             segment_count += segment_counts[segment_counts.size() - 1];
         }
+
         if (input_segments.size() != segment_count) {
             throw GoGameNNFeedForwardError();
         }
@@ -250,6 +255,10 @@ void GoGameNN::scale_network(const GoGameNN &i_network) {
             layer1[i] = i_network.layer1[i];
         }
     } else {
+        // Validate we are both not uniform if the network is not uniform.
+        if (i_network.uniform) {
+            throw GoGameNNScaleError();
+        }
         // Set Random generator for use when selecting networks from previous generation
         std::random_device rd;
         std::mt19937 gen(rd());
