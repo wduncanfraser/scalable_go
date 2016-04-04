@@ -15,6 +15,9 @@ set(NET_BENCHMARK
 set(GOGAMENN_BENCHMARK
         benchmark_gogamenn.cpp)
 
+set(GOGAMENN_BENCHMARK19
+        benchmark_gogamenn19x19.cpp)
+
 set(MOVESET_EXAMPLE
         basic_moveset.cpp)
 
@@ -24,6 +27,8 @@ set(TRAINING
 add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
 add_executable(benchmark_gogamenn ${GOGAMENN_BENCHMARK})
+
+add_executable(benchmark_gogamenn19x19 ${GOGAMENN_BENCHMARK19})
 
 add_executable(basic_moveset ${MOVESET_EXAMPLE})
 
@@ -41,6 +46,9 @@ target_link_libraries(benchmark_neuralnet neuralnet)
 target_link_libraries(benchmark_gogamenn neuralnet)
 target_link_libraries(benchmark_gogamenn gogame)
 target_link_libraries(benchmark_gogamenn gogamenn)
+target_link_libraries(benchmark_gogamenn19x19 neuralnet)
+target_link_libraries(benchmark_gogamenn19x19 gogame)
+target_link_libraries(benchmark_gogamenn19x19 gogamenn)
 target_link_libraries(basic_moveset gogame)
 target_link_libraries(scalable_go_training neuralnet)
 target_link_libraries(scalable_go_training gogame)
