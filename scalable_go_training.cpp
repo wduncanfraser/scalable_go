@@ -7,6 +7,7 @@
 #include <limits>
 #include <stdexcept>
 #include <chrono>
+#include <random>
 
 #include "gogame.h"
 #include "gogamenn.h"
@@ -173,13 +174,16 @@ int main(int argc, char* argv[]) {
 
         std::ifstream best_networks_in(output_directory + "lastbestnetworks.txt");
         std::ifstream import_networks(output_directory + "import_networks.txt");
-        // If scaled network, confirm import_networks is open
-        if (scaled && !import_networks.is_open()) {
-            throw TrainingImportError();
-        } else {
-            // If it is, import example_networks;
-            for (unsigned int i = 0; i < NETWORKKEEP; i++) {
-                scaling_networks[i].import_weights_stream(import_networks);
+
+        if (scaled) {
+            // If scaled network, confirm import_networks is open
+            if (!import_networks.is_open()) {
+                throw TrainingImportError();
+            } else {
+                // If it is, import example_networks;
+                for (unsigned int i = 0; i < NETWORKKEEP; i++) {
+                    scaling_networks[i].import_weights_stream(import_networks);
+                }
             }
         }
 
