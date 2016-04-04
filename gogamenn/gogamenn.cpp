@@ -89,20 +89,18 @@ std::vector<std::vector<double>> get_go_network_translation(const GoGame &i_goga
     return output;
 }
 
-GoGameNN::GoGameNN(const uint8_t i_board_size) {
+GoGameNN::GoGameNN(const uint8_t i_board_size, const bool i_uniform) {
     // Check that board dimensions are between 3 and 19, otherwise throw
     if ((i_board_size < 3) || (i_board_size > 19)) {
         throw GoGameNNInitError();
     }
     board_size = i_board_size;
+    uniform = i_uniform;
 
     // Get the segment sizes for the board_size. get_go_board_segments will throw if board is not of proper size
     std::vector<uint8_t> segments = get_go_board_segments(board_size);
 
     for (uint8_t &segment : segments) {
-        // Not using pow, to avoid converting to floating point
-        uint16_t segment_count = (board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1));
-
         // Determine Network dimensions
         std::vector<unsigned int> neuron_counts;
         neuron_counts.push_back(segment * segment);
@@ -110,9 +108,18 @@ GoGameNN::GoGameNN(const uint8_t i_board_size) {
         neuron_counts.push_back(neuron_counts[1] / 4);
         neuron_counts.push_back(1);
 
-        // Creating a network for each segment.
-        for (uint16_t i = 0; i < segment_count; i++) {
+        if (uniform) {
+            // If uniform, we only need 1 network for each segment size.
             layer1.push_back(NeuralNet(4, neuron_counts));
+        } else {
+            // If not uniform, we need a network for each subsection
+            // Not using pow, to avoid converting to floating point
+            uint16_t segment_count = (board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1));
+
+            // Creating a network for each segment.
+            for (uint16_t i = 0; i < segment_count; i++) {
+                layer1.push_back(NeuralNet(4, neuron_counts));
+            }
         }
     }
 
@@ -125,11 +132,12 @@ GoGameNN::GoGameNN(const uint8_t i_board_size) {
     layer2 = NeuralNet(3, neuron_counts);
 }
 
-GoGameNN::GoGameNN(const GoGameNN &i_network) : board_size(i_network.board_size), layer1(i_network.layer1),
-                                                layer2(i_network.layer2) { }
+GoGameNN::GoGameNN(const GoGameNN &i_network) : uniform(i_network.uniform), board_size(i_network.board_size),
+                                                layer1(i_network.layer1), layer2(i_network.layer2) { }
 
 bool GoGameNN::operator==(const GoGameNN &i_network) const {
-    return (layer1 == i_network.layer1) && (layer2 == i_network.layer2) && (board_size == i_network.board_size);
+    return (layer1 == i_network.layer1) && (layer2 == i_network.layer2) && (board_size == i_network.board_size) &&
+            (uniform == i_network.uniform);
 }
 
 void GoGameNN::initialize_random() {
@@ -154,21 +162,45 @@ void GoGameNN::mutate(const double &radius) {
 
 void GoGameNN::feed_forward(const std::vector<std::vector<double>> &input_segments, const uint8_t pieces_played,
                                     const uint8_t prisoner_count, const uint8_t opponent_prisoner_count) {
-    // Validate size of input_segments to layer 1 neural networks
-    if (input_segments.size() != layer1.size()) {
-        throw GoGameNNFeedForwardError();
-    }
-
     // Vector to hold layer2 inputs.
-    std::vector<double> layer2_inputs(layer1.size(), 0);
+    std::vector<double> layer2_inputs(input_segments.size(), 0);
 
-    // Pass all inputs to appropriate neural networks and feed forward
-    for (unsigned int i = 0; i < layer1.size(); i++) {
-        layer1[i].feed_forward(input_segments[i]);
-        // Once complete. Assign output to layer 2 input.
-        layer2_inputs[i] = layer1[i].get_output()[0];
+    if (uniform) {
+        // Validate size of input_segments
+        std::vector<uint8_t> segments = get_go_board_segments(board_size);
+        std::vector<uint16_t> segment_counts;
+        uint16_t segment_count = 0;
+
+        for (uint8_t &segment : segments) {
+            segment_counts.push_back((board_size - segment + uint16_t(1)) * (board_size - segment + uint16_t(1)));
+            segment_count += segment_counts[segment_counts.size() - 1];
+        }
+        if (input_segments.size() != segment_count) {
+            throw GoGameNNFeedForwardError();
+        }
+
+        unsigned int i = 0;
+        for (uint16_t j = 0; j < segment_counts.size(); j++) {
+            for (uint16_t k = 0; k < segment_counts[j]; k++) {
+                layer1[j].feed_forward(input_segments[i]);
+                // Once complete. Assign output to layer 2 input.
+                layer2_inputs[i] = layer1[j].get_output()[0];
+                i += 1;
+            }
+        }
+    } else {
+        // Validate size of input_segments to layer 1 neural networks
+        if (input_segments.size() != layer1.size()) {
+            throw GoGameNNFeedForwardError();
+        }
+
+        // Pass all inputs to appropriate neural networks and feed forward
+        for (unsigned int i = 0; i < layer1.size(); i++) {
+            layer1[i].feed_forward(input_segments[i]);
+            // Once complete. Assign output to layer 2 input.
+            layer2_inputs[i] = layer1[i].get_output()[0];
+        }
     }
-
     // Layer 1 is processed. Append values for piece and prisoner counts to input.
     // Values are normalized to 1/2 the total board pieces rounded down. So for a 3x3 game. 9 pieces. Normalized by 4.
     uint8_t normalization = uint8_t((board_size * board_size) / 2);
@@ -208,39 +240,50 @@ void GoGameNN::scale_network(const GoGameNN &i_network) {
         throw GoGameNNScaleError();
     }
 
-    // Set Random generator for use when selecting networks from previous generation
-    std::random_device rd;
-    std::mt19937 gen(rd());
-
-    // Copy existing networks
-    // We should end up with (board_size - segment_size + 1) ^ 2 of the previous size networks.
-    // For example:
-    // A 5x5 network would have 9 3x3 subsections
-    // A 7x7 Network would have 9 5x5 subsections and 25 3x3 subsections.
-    // A 9x9 Network would have 9 7x7 subsections, 25 5x5 subsections, and 49 3x3 subsections.
-    // Setup int for storing current segment.
-    unsigned int current_offset = 0;
-    unsigned int previous_offset = 0;
-    // Loop starting at the smallest subsection.
-    for (uint8_t segment_size = SEGMENT_MIN; segment_size < board_size; segment_size += SEGMENT_DIVISION) {
-        unsigned int total_segments = (board_size - segment_size + 1) * (board_size - segment_size + 1);
-        unsigned int previous_total_segments = (board_size - segment_size - 1) * (board_size - segment_size - 1);
-
-        // Loop through all segments of a given size. Randomly assign them an appropriate network from
-        // the passed network.
-        for (unsigned int segment = 0; segment < total_segments; segment++) {
-            std::uniform_int_distribution<> dis(0, previous_total_segments - 1);
-
-            layer1[current_offset + segment] = i_network.layer1[previous_offset + dis(gen)];
+    if (uniform) {
+        // Validate we are both uniform if the network is uniform.
+        if (!i_network.uniform) {
+            throw GoGameNNScaleError();
         }
+        // Copy existing networks. Only 1 per segment size.
+        for (u_int8_t i = 0; i < i_network.layer1.size(); i++) {
+            layer1[i] = i_network.layer1[i];
+        }
+    } else {
+        // Set Random generator for use when selecting networks from previous generation
+        std::random_device rd;
+        std::mt19937 gen(rd());
 
-        // Finished assigning current segment size. Increment offsets.
-        current_offset += total_segments;
-        previous_offset += previous_total_segments;
+        // Copy existing networks
+        // We should end up with (board_size - segment_size + 1) ^ 2 of the previous size networks.
+        // For example:
+        // A 5x5 network would have 9 3x3 subsections
+        // A 7x7 Network would have 9 5x5 subsections and 25 3x3 subsections.
+        // A 9x9 Network would have 9 7x7 subsections, 25 5x5 subsections, and 49 3x3 subsections.
+        // Setup int for storing current segment.
+        unsigned int current_offset = 0;
+        unsigned int previous_offset = 0;
+        // Loop starting at the smallest subsection.
+        for (uint8_t segment_size = SEGMENT_MIN; segment_size < board_size; segment_size += SEGMENT_DIVISION) {
+            unsigned int total_segments = (board_size - segment_size + 1) * (board_size - segment_size + 1);
+            unsigned int previous_total_segments = (board_size - segment_size - 1) * (board_size - segment_size - 1);
+
+            // Loop through all segments of a given size. Randomly assign them an appropriate network from
+            // the passed network.
+            for (unsigned int segment = 0; segment < total_segments; segment++) {
+                std::uniform_int_distribution<> dis(0, previous_total_segments - 1);
+
+                layer1[current_offset + segment] = i_network.layer1[previous_offset + dis(gen)];
+            }
+
+            // Finished assigning current segment size. Increment offsets.
+            current_offset += total_segments;
+            previous_offset += previous_total_segments;
+        }
     }
 
     // At this point, all scaling should be done. Need to randomly initialize the largest subsection and layer 2.
-    layer1[current_offset].initialize_random();
+    layer1[layer1.size() - 1].initialize_random();
     layer2.initialize_random();
 }
 

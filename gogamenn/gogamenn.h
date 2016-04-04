@@ -48,6 +48,9 @@ std::vector<std::vector<double>> get_go_network_translation(const GoGame &i_goga
 // Class for holding a GoGame neuralnet. Wrapper around NeuralNet
 class GoGameNN {
  private:
+    // Bool to store wether GoGameNN is a uniform network
+    bool uniform;
+
     // Board size
     uint8_t board_size;
 
@@ -59,7 +62,7 @@ class GoGameNN {
 
  public:
     // Constructor with size specification
-    explicit GoGameNN(const uint8_t board_size);
+    GoGameNN(const uint8_t i_board_size, const bool i_uniform);
 
     // Copy Constructor
     GoGameNN(const GoGameNN &i_network);

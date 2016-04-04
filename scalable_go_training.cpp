@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
         throw TrainingArgumentError();
     }
     for (unsigned int n = start_cycle; n <= end_cycle; n++) {
-        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size));
+        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size, false));
         std::vector<int> training_scores(NETWORKCOUNT);
 
         unsigned int export_count = 0;

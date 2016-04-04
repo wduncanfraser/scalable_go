@@ -16,7 +16,7 @@ TEST(gogameab_basic_check, simple_ab) {
     int depth = 1;
     GoGame test_game(board_size);
 
-    GoGameNN test_network(board_size);
+    GoGameNN test_network(board_size, false);
 
     test_game.generate_moves(0);
 
