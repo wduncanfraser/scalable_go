@@ -7,6 +7,7 @@
 #include <limits>
 #include <stdexcept>
 #include <chrono>
+#include <random>
 
 #include "gogame.h"
 #include "gogamenn.h"
@@ -22,10 +23,17 @@
 #define TRAINING_SET 1
 #define STARTCYCLE 1
 #define ENDCYCLE 200
+#define UNIFORM 0
+#define SCALED 0
 
 class TrainingArgumentError : public std::runtime_error {
  public:
     TrainingArgumentError() : std::runtime_error("TrainingArgumentError") { }
+};
+
+class TrainingImportError : public std::runtime_error {
+public:
+    TrainingImportError() : std::runtime_error("TrainingImportError") { }
 };
 
 std::vector<int> score_networks(std::vector<GoGameNN> networks, const uint8_t board_size) {
@@ -126,6 +134,8 @@ int main(int argc, char* argv[]) {
     unsigned int training_set = 0;
     unsigned int start_cycle = 0;
     unsigned int end_cycle = 0;
+    bool uniform = 0;
+    bool scaled = 0;
     // Validate command line parameters
     if (argc == 1) {
         // No parameters, use the Macros
@@ -133,18 +143,29 @@ int main(int argc, char* argv[]) {
         training_set = TRAINING_SET;
         start_cycle = STARTCYCLE;
         end_cycle = ENDCYCLE;
-    } else if (argc == 5) {
+        uniform = UNIFORM;
+        scaled = SCALED;
+    } else if (argc == 7) {
         // TODO(wdfraser): Add some better error checking
         board_size = uint8_t(atoi(argv[1]));
         training_set = atoi(argv[2]);
         start_cycle = atoi(argv[3]);
         end_cycle = atoi(argv[4]);
+        uniform = atoi(argv[5]) != 0;
+        scaled = atoi(argv[6]) != 0;
     } else {
         throw TrainingArgumentError();
     }
     for (unsigned int n = start_cycle; n <= end_cycle; n++) {
-        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size));
+        std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size, uniform));
         std::vector<int> training_scores(NETWORKCOUNT);
+
+        // Scaling networks used for seeding networks if scaled = true
+        std::vector<GoGameNN> scaling_networks(NETWORKKEEP, GoGameNN(board_size - SEGMENT_DIVISION, uniform));
+        // Set Random generator for use when selecting networks for reseeding
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, NETWORKKEEP - 1);
 
         unsigned int export_count = 0;
 
@@ -152,6 +173,19 @@ int main(int argc, char* argv[]) {
                 "size" + std::to_string(board_size) + "set" + std::to_string(training_set) + "/";
 
         std::ifstream best_networks_in(output_directory + "lastbestnetworks.txt");
+        std::ifstream import_networks(output_directory + "import_networks.txt");
+
+        if (scaled) {
+            // If scaled network, confirm import_networks is open
+            if (!import_networks.is_open()) {
+                throw TrainingImportError();
+            } else {
+                // If it is, import example_networks;
+                for (unsigned int i = 0; i < NETWORKKEEP; i++) {
+                    scaling_networks[i].import_weights_stream(import_networks);
+                }
+            }
+        }
 
         std::cout << "Generation with " << NETWORKCOUNT << " Neural Networks.\n"
         << "Total Games: " << NETWORKCOUNT * NETWORKCOUNT << std::endl;
@@ -168,13 +202,23 @@ int main(int argc, char* argv[]) {
                 training_networks[i + NETWORKKEEP].mutate(MUTATER);
             }
             for (unsigned int i = 0; i < NETWORKKEEP; i++) {
-                training_networks[i + (NETWORKKEEP * 2)].initialize_random();
+                if (scaled) {
+                    // If scaled network, seed network subsections from a random imported network
+                    training_networks[i + (NETWORKKEEP * 2)].scale_network(scaling_networks[dis(gen)]);
+                } else {
+                    training_networks[i + (NETWORKKEEP * 2)].initialize_random();
+                }
             }
         } else if (n == 1) {
             std::cout << "Starting first generation. Last best network file failed to open."
             << " Initializing random weights. \n";
             for (GoGameNN &element : training_networks) {
-                element.initialize_random();
+                if (scaled) {
+                    // If scaled network, seed network subsections from a random imported network
+                    element.scale_network(scaling_networks[dis(gen)]);
+                } else {
+                    element.initialize_random();
+                }
             }
         } else {
             std::cout << "Starting generation " << n << ". Last best network file failed to open. Ending training. \n";

@@ -79,7 +79,7 @@ TEST(gogamenn_basic_check, populated_3x3_board_translation_white) {
 
 TEST(gogamenn_basic_check, gogamenn_5x5_blank) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
 
     GoGame test_game(board_size);
     test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
@@ -94,16 +94,27 @@ TEST(gogamenn_basic_check, gogamenn_5x5_blank) {
 }
 
 TEST(gogamenn_basic_check, gogamenn_too_small) {
-    EXPECT_THROW(GoGameNN(2), GoGameNNInitError);
+    EXPECT_THROW(GoGameNN(2, false), GoGameNNInitError);
 }
 
 TEST(gogamenn_basic_check, gogamenn_too_large) {
-    EXPECT_THROW(GoGameNN(20), GoGameNNInitError);
+    EXPECT_THROW(GoGameNN(20, false), GoGameNNInitError);
 }
 
 TEST(gogamenn_basic_check, gogamenn_copy_compare) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
+
+    test_nn.initialize_random();
+
+    GoGameNN test_nn2(test_nn);
+
+    EXPECT_EQ(test_nn, test_nn2);
+}
+
+TEST(gogamenn_basic_check, gogamenn_copy_compar_uniform) {
+    uint8_t board_size = 5;
+    GoGameNN test_nn(board_size, true);
 
     test_nn.initialize_random();
 
@@ -114,7 +125,19 @@ TEST(gogamenn_basic_check, gogamenn_copy_compare) {
 
 TEST(gogamenn_basic_check, gogamenn_5x5_randomized) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
+    test_nn.initialize_random();
+
+    GoGame test_game(board_size);
+    test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
+                         test_game.get_prisoner_count()[0], test_game.get_prisoner_count()[1]);
+
+    EXPECT_NE(0, test_nn.get_output());
+}
+
+TEST(gogamenn_basic_check, gogamenn_5x5_randomized_uniform) {
+    uint8_t board_size = 5;
+    GoGameNN test_nn(board_size, true);
     test_nn.initialize_random();
 
     GoGame test_game(board_size);
@@ -126,7 +149,24 @@ TEST(gogamenn_basic_check, gogamenn_5x5_randomized) {
 
 TEST(gogamenn_basic_check, gogamenn_5x5_blank_opponent_check) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
+    test_nn.initialize_random();
+
+    GoGame test_game(board_size);
+    test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
+                         test_game.get_prisoner_count()[0], test_game.get_prisoner_count()[1]);
+    double team1 = test_nn.get_output();
+
+    test_nn.feed_forward(get_go_network_translation(test_game, 1), test_game.get_pieces_placed()[1],
+                         test_game.get_prisoner_count()[1], test_game.get_prisoner_count()[0]);
+    double team2 = test_nn.get_output();
+
+    EXPECT_EQ(team1, team2);
+}
+
+TEST(gogamenn_basic_check, gogamenn_5x5_blank_opponent_check_uniform) {
+    uint8_t board_size = 5;
+    GoGameNN test_nn(board_size, true);
     test_nn.initialize_random();
 
     GoGame test_game(board_size);
@@ -148,7 +188,28 @@ TEST(gogamenn_basic_check, gogamenn_5x5_single_piece_opponent_check) {
     test_board.board[2][2] = get_mask(1);
     GoGame test_game(test_board);
 
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
+    test_nn.initialize_random();
+
+    test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
+                         test_game.get_prisoner_count()[0], test_game.get_prisoner_count()[1]);
+    double team1 = test_nn.get_output();
+
+    test_nn.feed_forward(get_go_network_translation(test_game, 1), test_game.get_pieces_placed()[1],
+                         test_game.get_prisoner_count()[1], test_game.get_prisoner_count()[0]);
+    double team2 = test_nn.get_output();
+
+    EXPECT_NE(team1, team2);
+}
+
+TEST(gogamenn_basic_check, gogamenn_5x5_single_piece_opponent_check_uniform) {
+    uint8_t board_size = 5;
+    GoBoard test_board(board_size);
+    test_board.board[0][0] = get_mask(0);
+    test_board.board[2][2] = get_mask(1);
+    GoGame test_game(test_board);
+
+    GoGameNN test_nn(board_size, true);
     test_nn.initialize_random();
 
     test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
@@ -164,7 +225,26 @@ TEST(gogamenn_basic_check, gogamenn_5x5_single_piece_opponent_check) {
 
 TEST(gogamenn_basic_check, gogamenn_5x5_mutate) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
+    test_nn.initialize_random();
+
+    GoGame test_game(board_size);
+    test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
+                         test_game.get_prisoner_count()[0], test_game.get_prisoner_count()[1]);
+
+    double original_output = test_nn.get_output();
+
+    test_nn.mutate(.01);
+
+    test_nn.feed_forward(get_go_network_translation(test_game, 0), test_game.get_pieces_placed()[0],
+                         test_game.get_prisoner_count()[0], test_game.get_prisoner_count()[1]);
+
+    EXPECT_NE(original_output, test_nn.get_output());
+}
+
+TEST(gogamenn_basic_check, gogamenn_5x5_mutate_uniform) {
+    uint8_t board_size = 5;
+    GoGameNN test_nn(board_size, true);
     test_nn.initialize_random();
 
     GoGame test_game(board_size);
@@ -183,7 +263,7 @@ TEST(gogamenn_basic_check, gogamenn_5x5_mutate) {
 
 TEST(gogamenn_basic_check, gogamenn_bad_feed_forward) {
     uint8_t board_size = 5;
-    GoGameNN test_nn(board_size);
+    GoGameNN test_nn(board_size, false);
     test_nn.initialize_random();
 
     GoGame test_game(board_size);
@@ -193,17 +273,48 @@ TEST(gogamenn_basic_check, gogamenn_bad_feed_forward) {
     EXPECT_THROW(test_nn.feed_forward(test_feed, test_game.get_pieces_placed()[0], test_game.get_prisoner_count()[0],
                                       test_game.get_prisoner_count()[1]), GoGameNNFeedForwardError);
 }
+
+TEST(gogamenn_basic_check, gogamenn_bad_feed_forward_uniform) {
+    uint8_t board_size = 5;
+    GoGameNN test_nn(board_size, true);
+    test_nn.initialize_random();
+
+    GoGame test_game(board_size);
+    std::vector<std::vector<double>> test_feed = get_go_network_translation(test_game, 0);
+    test_feed.erase(test_feed.end() - 1);
+
+    EXPECT_THROW(test_nn.feed_forward(test_feed, test_game.get_pieces_placed()[0], test_game.get_prisoner_count()[0],
+                                      test_game.get_prisoner_count()[1]), GoGameNNFeedForwardError);
+}
+
 TEST(gogamenn_basic_check, write_to_file) {
     // Check that there is no data loss/roundng error in exporting the network to file
-    GoGameNN test_network1(5);
+    GoGameNN test_network1(5, false);
     test_network1.initialize_random();
 
     std::ofstream output_file("testgogamenn.txt");
     test_network1.export_weights_stream(output_file);
     output_file.close();
 
-    GoGameNN test_network2(5);
+    GoGameNN test_network2(5, false);
     std::ifstream input_file("testgogamenn.txt");
+    test_network2.import_weights_stream(input_file);
+    input_file.close();
+
+    EXPECT_EQ(test_network1, test_network2);
+}
+
+TEST(gogamenn_basic_check, write_to_file_uniform) {
+    // Check that there is no data loss/roundng error in exporting the network to file
+    GoGameNN test_network1(5, true);
+    test_network1.initialize_random();
+
+    std::ofstream output_file("testgogamenn_uniform.txt");
+    test_network1.export_weights_stream(output_file);
+    output_file.close();
+
+    GoGameNN test_network2(5, true);
+    std::ifstream input_file("testgogamenn_uniform.txt");
     test_network2.import_weights_stream(input_file);
     input_file.close();
 
@@ -212,7 +323,7 @@ TEST(gogamenn_basic_check, write_to_file) {
 
 TEST(gogamenn_basic_check, write_multiple_to_file) {
     // Check that there is no data loss/roundng error in exporting networks to file
-    std::vector<GoGameNN> test_networks1(10, GoGameNN(5));
+    std::vector<GoGameNN> test_networks1(10, GoGameNN(5, false));
     for (GoGameNN &element : test_networks1) {
         element.initialize_random();
 
@@ -224,9 +335,34 @@ TEST(gogamenn_basic_check, write_multiple_to_file) {
     }
     output_file.close();
 
-    std::vector<GoGameNN> test_networks2(10, GoGameNN(5));
+    std::vector<GoGameNN> test_networks2(10, GoGameNN(5, false));
 
     std::ifstream input_file("testgogamenns.txt");
+    for (GoGameNN &element : test_networks2) {
+        element.import_weights_stream(input_file);
+    }
+    input_file.close();
+
+    EXPECT_EQ(test_networks1, test_networks2);
+}
+
+TEST(gogamenn_basic_check, write_multiple_to_file_uniform) {
+    // Check that there is no data loss/roundng error in exporting networks to file
+    std::vector<GoGameNN> test_networks1(10, GoGameNN(5, true));
+    for (GoGameNN &element : test_networks1) {
+        element.initialize_random();
+
+    }
+
+    std::ofstream output_file("testgogamenns_uniform.txt");
+    for (GoGameNN &element : test_networks1) {
+        element.export_weights_stream(output_file);
+    }
+    output_file.close();
+
+    std::vector<GoGameNN> test_networks2(10, GoGameNN(5, true));
+
+    std::ifstream input_file("testgogamenns_uniform.txt");
     for (GoGameNN &element : test_networks2) {
         element.import_weights_stream(input_file);
     }

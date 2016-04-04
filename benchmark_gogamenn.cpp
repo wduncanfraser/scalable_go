@@ -15,7 +15,7 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    GoGameNN test1(board_size);
+    GoGameNN test1(board_size, false);
     test1.initialize_random();
 
     end = std::chrono::system_clock::now();

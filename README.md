@@ -7,7 +7,8 @@ CS Masters Project. Scaling evolutionary neural networks for Go artificial intel
 ## Usage
 ### Training
 +   Once compiled, create a directory in the same location as the binary called "size\<board size\>set\<set number\>". For example, "size3set1".
-+   Run training with "./scalable_go_training \<board_size\> \<set\> \<start_generation\> \<end_generation\>".
++   Run training with "./scalable_go_training \<board_size\> \<set\> \<start_generation\> \<end_generation\> \<uniform\> \<scaled\>".
++ Uniform and scaled are booleans (enter 0 or 1) that determine if the network us uniform, and whether it is scaling up from a smaller network. If scaling up, "importnetworks.txt" much be present, which should be a copy of "lastbestnetworks.txt" from previous training on one size smaller board.
 
 ## Structure
 +   gogame/: Library for defining Go game, board, and move generation

@@ -31,6 +31,11 @@ public:
     GoGameNNFeedForwardError() : std::runtime_error("GoGameNNFeedForwardError") { }
 };
 
+class GoGameNNScaleError : public std::runtime_error {
+ public:
+    GoGameNNScaleError() : std::runtime_error("GoGameNNScaleError") { }
+};
+
 // Function that returns a vector of all segment sizes for a board of specified size.
 // The specified size must be a valid segment size.
 std::vector<uint8_t> get_go_board_segments(const uint8_t board_size);
@@ -43,6 +48,9 @@ std::vector<std::vector<double>> get_go_network_translation(const GoGame &i_goga
 // Class for holding a GoGame neuralnet. Wrapper around NeuralNet
 class GoGameNN {
  private:
+    // Bool to store wether GoGameNN is a uniform network
+    bool uniform;
+
     // Board size
     uint8_t board_size;
 
@@ -54,7 +62,7 @@ class GoGameNN {
 
  public:
     // Constructor with size specification
-    explicit GoGameNN(const uint8_t board_size);
+    GoGameNN(const uint8_t i_board_size, const bool i_uniform);
 
     // Copy Constructor
     GoGameNN(const GoGameNN &i_network);
@@ -80,6 +88,12 @@ class GoGameNN {
 
     // Import weights from specified ifstream. Wrapper around NeuralNet::import_weights_stream
     void import_weights_stream(std::ifstream &file);
+
+    // Import weights from an existing network and scale up. New sections are initialized randomly.
+    void scale_network(const GoGameNN &i_network);
+
+    // Function to retrieve layer 1 networks. Used in testing
+    std::vector<NeuralNet> get_layer1();
 };
 
 #endif  // GOGAMENN_GOGAMENN_H_
