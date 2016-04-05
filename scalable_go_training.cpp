@@ -156,12 +156,13 @@ int main(int argc, char* argv[]) {
     } else {
         throw TrainingArgumentError();
     }
+
     for (unsigned int n = start_cycle; n <= end_cycle; n++) {
         std::vector<GoGameNN> training_networks(NETWORKCOUNT, GoGameNN(board_size, uniform));
         std::vector<int> training_scores(NETWORKCOUNT);
 
         // Scaling networks used for seeding networks if scaled = true
-        std::vector<GoGameNN> scaling_networks(NETWORKKEEP, GoGameNN(board_size - SEGMENT_DIVISION, uniform));
+        std::vector<GoGameNN> scaling_networks;
         // Set Random generator for use when selecting networks for reseeding
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -180,6 +181,7 @@ int main(int argc, char* argv[]) {
             if (!import_networks.is_open()) {
                 throw TrainingImportError();
             } else {
+                scaling_networks.assign(NETWORKKEEP, GoGameNN(board_size - SEGMENT_DIVISION, uniform));
                 // If it is, import example_networks;
                 for (unsigned int i = 0; i < NETWORKKEEP; i++) {
                     scaling_networks[i].import_weights_stream(import_networks);
