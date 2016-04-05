@@ -15,8 +15,8 @@ set(NET_BENCHMARK
 set(GOGAMENN_BENCHMARK
         benchmark_gogamenn.cpp)
 
-set(GOGAMENN_BENCHMARK19
-        benchmark_gogamenn19x19.cpp)
+set(GOGAMEAB19_BENCHMARK
+        benchmark_19x19ab_prune.cpp)
 
 set(MOVESET_EXAMPLE
         basic_moveset.cpp)
@@ -24,15 +24,20 @@ set(MOVESET_EXAMPLE
 set(TRAINING
         scalable_go_training.cpp)
 
+set(COMPARISON
+        scalable_go_comparison.cpp)
+
 add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
 add_executable(benchmark_gogamenn ${GOGAMENN_BENCHMARK})
 
-add_executable(benchmark_gogamenn19x19 ${GOGAMENN_BENCHMARK19})
+add_executable(benchmark_19x19ab_prune ${GOGAMEAB19_BENCHMARK})
 
 add_executable(basic_moveset ${MOVESET_EXAMPLE})
 
 add_executable(scalable_go_training ${TRAINING})
+
+add_executable(scalable_go_comparison ${COMPARISON})
 
 include_directories(gogame neuralnet gogamenn gogameab)
 
@@ -43,14 +48,24 @@ add_subdirectory(gogameab)
 add_subdirectory(tests)
 
 target_link_libraries(benchmark_neuralnet neuralnet)
+
+target_link_libraries(basic_moveset gogame)
+
 target_link_libraries(benchmark_gogamenn neuralnet)
 target_link_libraries(benchmark_gogamenn gogame)
 target_link_libraries(benchmark_gogamenn gogamenn)
-target_link_libraries(benchmark_gogamenn19x19 neuralnet)
-target_link_libraries(benchmark_gogamenn19x19 gogame)
-target_link_libraries(benchmark_gogamenn19x19 gogamenn)
-target_link_libraries(basic_moveset gogame)
+
+target_link_libraries(benchmark_19x19ab_prune neuralnet)
+target_link_libraries(benchmark_19x19ab_prune gogame)
+target_link_libraries(benchmark_19x19ab_prune gogamenn)
+target_link_libraries(benchmark_19x19ab_prune gogameab)
+
 target_link_libraries(scalable_go_training neuralnet)
 target_link_libraries(scalable_go_training gogame)
 target_link_libraries(scalable_go_training gogamenn)
 target_link_libraries(scalable_go_training gogameab)
+
+target_link_libraries(scalable_go_comparison neuralnet)
+target_link_libraries(scalable_go_comparison gogame)
+target_link_libraries(scalable_go_comparison gogamenn)
+target_link_libraries(scalable_go_comparison gogameab)
