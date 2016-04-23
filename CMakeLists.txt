@@ -27,6 +27,9 @@ set(TRAINING
 set(COMPARISON
         scalable_go_comparison.cpp)
 
+set(CLIENT
+        scalable_go_client.cpp)
+
 add_executable(benchmark_neuralnet ${NET_BENCHMARK})
 
 add_executable(benchmark_gogamenn ${GOGAMENN_BENCHMARK})
@@ -38,6 +41,8 @@ add_executable(basic_moveset ${MOVESET_EXAMPLE})
 add_executable(scalable_go_training ${TRAINING})
 
 add_executable(scalable_go_comparison ${COMPARISON})
+
+add_executable(scalable_go_client ${CLIENT})
 
 include_directories(gogame neuralnet gogamenn gogameab)
 
@@ -69,3 +74,8 @@ target_link_libraries(scalable_go_comparison neuralnet)
 target_link_libraries(scalable_go_comparison gogame)
 target_link_libraries(scalable_go_comparison gogamenn)
 target_link_libraries(scalable_go_comparison gogameab)
+
+target_link_libraries(scalable_go_client neuralnet)
+target_link_libraries(scalable_go_client gogame)
+target_link_libraries(scalable_go_client gogamenn)
+target_link_libraries(scalable_go_client gogameab)
